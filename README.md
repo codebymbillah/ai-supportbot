@@ -5,21 +5,21 @@ An AI sales and support chat for Next.js: a floating button and a chat window, a
 ## How it is used
 The chat has two halves that work together: this package (the chat box on the website) and a backend that writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`).
 
-**On another Next.js website** (works today), three steps and one setting:
-1. `npm install github:TechaByte-Solutions/support-chat-kit#v0.2.0`, then add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`, and one line to the global CSS: `@source "../node_modules/@techabyte/support-chat/src";`
-2. Create `app/api/chat/[...path]/route.ts` with two lines (the safe door to the backend):
-   ```ts
-   import { createChatProxy } from "@techabyte/support-chat/server"
-   export const { GET, POST } = createChatProxy()
-   ```
-3. Put the chat in the layout, with the site's name:
-   ```tsx
-   import { SupportChat } from "@techabyte/support-chat"
-   <SupportChat config={{ brandName: "Acme Books" }} />
-   ```
-4. Set `API_URL=https://your-backend.com/api/v1` in `.env`.
+**On another Next.js website** (works today), one command:
+```
+npm install github:TechaByte-Solutions/support-chat-kit#v0.3.0
+npx support-chat init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
+```
+Then restart the dev server. `init` adds only what is missing and never replaces a file's content; it prints what it did, and a second run changes nothing. It:
+- creates `app/api/chat/[...path]/route.ts` (or `src/app/...`): the safe door to the backend, two lines;
+- adds `transpilePackages: ["@techabyte/support-chat"]` to `next.config`;
+- adds one line to the global CSS so Tailwind finds the chat's classes: `@source "../node_modules/@techabyte/support-chat/src";` (needs Tailwind 4);
+- puts `API_URL=…` in `.env.local`;
+- with `--layout`, adds `<SupportChat config={{ brandName: "Acme Books" }} />` to `app/layout` (without it, `init` tells you what to add). Use `--dry-run` first to see the changes without making them.
 
-That is all. The chat reads the backend's own chat settings (assistant name, greeting, suggestion chips, photos, and the on/off switch) and shows nothing while the backend says it is off. Colours, every sentence (a ready Bangla set is included), the money format, a cart button and the Bangla font are options in the same `config`; see `example/custom-setup.tsx` and `INSTALL.md`. The backend must follow `docs/CONTRACT.md`. To see the chat before the backend is ready, use the scripted demo (`createDemoTransport`).
+Check it: open `/api/chat/status` in the browser (some JSON means the route works). The chat reads the backend's own chat settings (assistant name, greeting, suggestion chips, photos, and the on/off switch) and shows nothing while the backend says it is off. Colours, every sentence (a ready Bangla set is included), the money format, a cart button and the Bangla font are options in the same `config`; see `example/custom-setup.tsx` and `INSTALL.md`. The backend must follow `docs/CONTRACT.md`. To see the chat before the backend is ready, use the scripted demo (`createDemoTransport`).
+
+Prefer to do it by hand? `INSTALL.md` lists every step.
 
 **On WordPress or Shopify** (planned, not built): a plugin or app that adds the same chat through a script, with the chat service hosted by us. The plan is in `docs/BACKEND-MODULE.md`.
 
@@ -45,9 +45,10 @@ src/
   labels/         every sentence the widget writes: labels.ts (English), labels-bn.ts (a ready Bangla set)
   styles/         support-chat.css: motion, border colour and the brand variables
   lib/            cn.ts
+cli/              `npx support-chat init`: sets a project up with one command
 example/          a route, a wrapper, demo scripts and the CSS lines a new project copies
 docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (turning the Laravel chat into a module)
-tests/            23 tests: safety rules, labels, the server door, the reading of backend answers
+tests/            43 tests: safety rules, labels, the server door, the reading of backend answers, the setup command
 ```
 Outside the package only two paths are public: `@techabyte/support-chat` (`src/index.ts`) and `@techabyte/support-chat/server` (`src/server/index.ts`). Everything else can move without breaking a project.
 

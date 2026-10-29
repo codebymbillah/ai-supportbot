@@ -12,10 +12,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "allowImportingTsExtensions": false,
+    "allowJs": true,
+    "checkJs": false,
     "paths": {
       "@techabyte/support-chat": ["./src/index.ts"],
       "@techabyte/support-chat/server": ["./src/server/index.ts"]
     }
   },
-  "include": ["src", "tests"]
+  "include": ["src", "tests", "cli"]
 }

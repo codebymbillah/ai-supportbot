@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.0 (29 Oct 2026)
+- `npx support-chat init` sets a Next.js project up with one command: the route (`app/` or `src/app/`, `.ts` or `.js`), `transpilePackages`, the Tailwind `@source` line, `API_URL`, and with `--layout` the chat in the layout. Options `--brand`, `--api-url`, `--dry-run`. It never replaces a file's content, says what it did, changes nothing on a second run, and tells you plainly when a file needs a manual change (a Tailwind 3 project, a config it cannot read, a route that already exists). 12 tests, 43 in all.
+
 ## 0.2.0 (29 Oct 2026)
 Easier to install. Nothing that worked before is removed.
 - `<SupportChat config={{ brandName: "Acme" }} />` is enough: every other setting has a default, `context` defaults to the current path, and without a transport of its own the widget talks to `/api/chat` and takes the assistant's name, greeting, suggestion chips, photo rules and the on/off switch from the backend's `GET /chat/config` (nothing is shown while the backend says it is off or cannot answer). A setting the project gives wins over the backend's.
