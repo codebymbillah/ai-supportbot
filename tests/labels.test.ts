@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { BANGLA_LABELS } from "../src/labels-bn"
-import { DEFAULT_LABELS, makeTranslate } from "../src/labels"
+import { BANGLA_LABELS } from "../src/labels/labels-bn"
+import { DEFAULT_LABELS, makeTranslate } from "../src/labels/labels"
 
 describe("labels", () => {
   it("fills the brand, assistant and other words", () => {

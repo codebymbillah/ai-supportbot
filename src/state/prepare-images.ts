@@ -1,5 +1,5 @@
-import type { Translate } from "./labels"
-import type { ChatImageRules } from "./types"
+import type { Translate } from "../labels/labels"
+import type { ChatImageRules } from "../types"
 
 // Photos a customer attaches. They are checked and shrunk in the browser before anything is sent: a phone photo is often 4 to 8 MB,
 // which is slow on a mobile connection and more than the backend takes. The server checks again (server.ts and the backend).

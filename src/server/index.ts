@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 import { defaultGuard } from "./guard"
+import { MAX_BODY, token } from "./fields"
+import { rebuild } from "./messages"
+import { MAX_FIELD, rebuildForm } from "./photos"
 
 export { defaultGuard }
 
@@ -37,90 +40,6 @@ export interface ChatProxyOptions {
   images?: { maxFiles: number; maxBytes: number } | false
   /** Calls allowed per visitor, as [count, windowMs] pairs for each kind. Anything left out keeps the default below. */
   limits?: Partial<Record<keyof typeof DEFAULT_LIMITS, [number, number][]>>
-}
-
-const GUEST_TOKEN = /^[A-Za-z0-9]{16,100}$/
-const MAX_BODY = 8 * 1024
-const MAX_MESSAGE = 1000
-
-const clean = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : undefined)
-const token = (v: unknown) => (typeof v === "string" && GUEST_TOKEN.test(v) ? v : undefined)
-const text = (v: unknown, max: number) => (typeof v === "string" || typeof v === "number" ? String(v).slice(0, max) : undefined)
-
-function rebuild(kind: string, raw: Record<string, unknown>): Record<string, unknown> | undefined {
-  const guest_token = token(raw.guest_token)
-  if (kind === "messages") {
-    const message = clean(raw.message, MAX_MESSAGE)?.trim()
-    if (!message) return undefined
-    const ctx = (raw.context && typeof raw.context === "object" ? raw.context : {}) as Record<string, unknown>
-    const cart = Array.isArray(ctx.cart)
-      ? ctx.cart.slice(0, 10).flatMap((c: unknown) => {
-          const r = (c && typeof c === "object" ? c : {}) as Record<string, unknown>
-          const id = text(r.product_id, 64)
-          const qty = typeof r.qty === "number" && r.qty > 0 && r.qty < 1_000_000 ? Math.floor(r.qty) : undefined
-          return id && qty ? [{ product_id: id, qty }] : []
-        })
-      : undefined
-    return { message, guest_token, context: { path: clean(ctx.path, 200), product_slug: clean(ctx.product_slug, 120), cart } }
-  }
-  if (kind === "feedback") {
-    const message_id = typeof raw.message_id === "number" && Number.isInteger(raw.message_id) && raw.message_id > 0 ? raw.message_id : undefined
-    return message_id && (raw.value === "up" || raw.value === "down") ? { message_id, value: raw.value, guest_token } : undefined
-  }
-  if (kind === "handoff") {
-    const name = clean(raw.name, 80)?.trim()
-    const phone = clean(raw.phone, 30)?.trim()
-    return name && phone ? { name, phone, note: clean(raw.note, 500)?.trim() || undefined, guest_token } : undefined
-  }
-  if (kind === "close") return { guest_token }
-  // drafts
-  return raw.action === "confirm" || raw.action === "dismiss" ? { action: raw.action, guest_token } : undefined
-}
-
-const MAX_FIELD = 64 * 1024
-
-// A photo is accepted only if its first bytes say JPEG, PNG or WebP, whatever name or type the browser gave it.
-async function sniff(file: File): Promise<"jpg" | "png" | "webp" | undefined> {
-  const b = new Uint8Array(await file.slice(0, 12).arrayBuffer())
-  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "jpg"
-  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "png"
-  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return "webp"
-  return undefined
-}
-
-/** A message with photos arrives as a form. Rebuilt field by field like the JSON one; each photo is checked and renamed. */
-async function rebuildForm(form: FormData, rules: { maxFiles: number; maxBytes: number }): Promise<{ body: FormData } | { status: number; message: string }> {
-  const field = (k: string) => (typeof form.get(k) === "string" ? (form.get(k) as string) : undefined)
-  const message = clean(field("message"), MAX_MESSAGE)?.trim() ?? ""
-  const files = form.getAll("images[]").filter((f): f is File => typeof f !== "string")
-  if (!message && files.length === 0) return { status: 422, message: "Please write a message first." }
-  if (files.length > rules.maxFiles) return { status: 422, message: `You can send up to ${rules.maxFiles} photos in one message.` }
-  const body = new FormData()
-  body.set("message", message)
-  const gt = token(field("guest_token"))
-  if (gt) body.set("guest_token", gt)
-  const path = clean(field("context[path]"), 200)
-  if (path) body.set("context[path]", path)
-  const slug = clean(field("context[product_slug]"), 120)
-  if (slug) body.set("context[product_slug]", slug)
-  let n = 0
-  for (let i = 0; i < 10; i++) {
-    const id = text(field(`context[cart][${i}][product_id]`), 64)
-    const qty = Number(field(`context[cart][${i}][qty]`))
-    if (id && Number.isInteger(qty) && qty > 0 && qty < 1_000_000) {
-      body.set(`context[cart][${n}][product_id]`, id)
-      body.set(`context[cart][${n}][qty]`, String(qty))
-      n++
-    }
-  }
-  for (const [i, file] of files.entries()) {
-    if (file.size === 0 || file.size > rules.maxBytes) return { status: 422, message: `A photo is larger than ${Math.round(rules.maxBytes / 1024 / 1024)} MB.` }
-    const kind = await sniff(file)
-    if (!kind) return { status: 422, message: "Only JPEG, PNG or WebP photos can be sent." }
-    const type = kind === "jpg" ? "image/jpeg" : kind === "png" ? "image/png" : "image/webp"
-    body.append("images[]", new File([file], `photo-${i + 1}.${kind}`, { type }))
-  }
-  return { body }
 }
 
 // How many calls one visitor may make. Messages are the expensive ones. Polling gets its own, higher allowance: the widget asks every

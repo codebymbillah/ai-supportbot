@@ -1,4 +1,4 @@
-import type { Translate } from "./labels"
+import type { Translate } from "../labels/labels"
 
 // Things a customer should not type into a chat. Checked in the browser before anything is sent, so the text never reaches the backend or its logs.
 

@@ -1,8 +1,8 @@
 "use client"
 
 import { createContext, useContext, useMemo } from "react"
-import { makeTranslate, type Translate } from "./labels"
-import type { SupportChatConfig } from "./types"
+import { makeTranslate, type Translate } from "../labels/labels"
+import type { SupportChatConfig } from "../types"
 
 interface ChatUi {
   config: SupportChatConfig

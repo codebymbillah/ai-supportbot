@@ -14,9 +14,8 @@
     "allowImportingTsExtensions": false,
     "paths": {
       "@techabyte/support-chat": ["./src/index.ts"],
-      "@techabyte/support-chat/server": ["./src/server.ts"],
-      "@/*": ["./example/shim/*"]
+      "@techabyte/support-chat/server": ["./src/server/index.ts"]
     }
   },
-  "include": ["src", "tests", "example"]
+  "include": ["src", "tests"]
 }

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { type DraftState, draftStates, guestToken } from "./guest-storage"
-import { makeTranslate } from "./labels"
-import { type ChatContext, ChatError, type ChatMessage, type ChatState, EMPTY_STATE, type SupportChatConfig } from "./types"
+import { makeTranslate } from "../labels/labels"
+import { type ChatContext, ChatError, type ChatMessage, type ChatState, EMPTY_STATE, type SupportChatConfig } from "../types"
 
 const FAST_MS = 1700 // while an answer is on its way
 const IDLE_MS = 4500 // an open chat with nothing going on

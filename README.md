@@ -6,7 +6,7 @@ An AI sales and support chat for Next.js: a floating button and a chat window, a
 The chat has two halves that work together: this package (the chat box on the website) and a backend that writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`).
 
 **On another Next.js website** (works today):
-1. Install it: `npm install github:TechaByte-Solutions/support-chat-kit#v0.1.0` and add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`.
+1. Install it: `npm install github:TechaByte-Solutions/support-chat-kit#v0.1.1` and add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`.
 2. Add one line to the global CSS so Tailwind finds its classes: `@source "../node_modules/@techabyte/support-chat/src";`
 3. Add a route `app/api/chat/[...path]/route.ts` with `createChatProxy({ apiUrl, authToken })`: the safe door to the backend (copy `example/route.ts`).
 4. Write one small component with the site's name, colours and words, and mount it once in the layout (copy `example/support-chat.tsx`). Colours, every sentence and a ready Bangla set are options, nothing is fixed to one brand.
@@ -22,16 +22,25 @@ The visitor writes in any language and the assistant answers a few seconds later
 It **polls** (it does not stream): the widget asks for new messages every 1.7 s while an answer is due and every 4.5 s when idle, and stops when the chat is closed or the tab is hidden.
 
 ## What is in the package
-| Path | Purpose |
-|---|---|
-| `src/index.ts` | the client entry: `SupportChat`, `createHttpTransport`, `createDemoTransport`, `BANGLA_LABELS`, the types |
-| `src/server.ts` | the server entry: `createChatProxy` (the safe door) and `defaultGuard`. Import it from server code only |
-| `src/support-chat.css` | the widget's motion, border colour and brand variables |
-| `src/labels.ts`, `src/labels-bn.ts` | every sentence the widget writes (English defaults, a ready Bangla set) |
-| `example/` | a wrapper, a route, demo scripts and the CSS lines a new project copies |
-| `docs/CONTRACT.md` | what the backend must answer |
-| `docs/BACKEND-MODULE.md` | how to turn the Laravel chat into a module any project can install |
-| `tests/` | 23 tests of the safety rules, the labels, the server door and the reading of backend answers |
+```
+src/
+  index.ts        the client entry: SupportChat, createHttpTransport, createDemoTransport, labels, types
+  types.ts        every type, and the SupportChatConfig a project fills in
+  server/         the safe door (server code only): index.ts createChatProxy, guard.ts defaultGuard,
+                  messages.ts and photos.ts rebuild what a browser sent, fields.ts small readers
+  widget/         the launcher and the window: chat-widget.tsx, hand-over and call-back, contact lines, theme, slow-reply note
+  messages/       what is drawn in the conversation: bubble, photos, composer, avatars, rich-text (the assistant's text as elements)
+  cards/          product, info and draft cards. A project with other things to show changes only this folder
+  transport/      how the widget talks: http-transport.ts (the real backend), demo.ts (scripted, for review)
+  state/          the chat's logic: use-support-chat.ts (polling), guest-storage.ts, safety.ts, prepare-images.ts
+  labels/         every sentence the widget writes: labels.ts (English), labels-bn.ts (a ready Bangla set)
+  styles/         support-chat.css: motion, border colour and the brand variables
+  lib/            cn.ts
+example/          a route, a wrapper, demo scripts and the CSS lines a new project copies
+docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (turning the Laravel chat into a module)
+tests/            23 tests: safety rules, labels, the server door, the reading of backend answers
+```
+Outside the package only two paths are public: `@techabyte/support-chat` (`src/index.ts`) and `@techabyte/support-chat/server` (`src/server/index.ts`). Everything else can move without breaking a project.
 
 ## Rules that travel with it
 - No model key and no direct backend call in the browser. Everything goes through the project's own route.

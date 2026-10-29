@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.1 (29 Oct 2026)
+Only the layout of `src/` changed: files are grouped in folders (server, widget, messages, cards, transport, state, labels, styles), large files are split, and the example no longer needs a shim file. The two public entries and their behaviour are the same. The photo and form checks in the route moved to `server/photos.ts`.
+
 ## 0.1.0 (29 Oct 2026)
 First version as a separate package, taken from the TransfarX storefront.
 

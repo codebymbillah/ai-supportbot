@@ -187,5 +187,5 @@ export interface SupportChatConfig {
   /** Brand colours (see ChatTheme). */
   theme?: ChatTheme
   /** Any of the widget's own sentences, in this project's words or language (see labels.ts for the list). */
-  labels?: Partial<import("./labels").ChatLabels>
+  labels?: Partial<import("./labels/labels").ChatLabels>
 }

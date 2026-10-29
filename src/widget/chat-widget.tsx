@@ -1,167 +1,24 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { HeadsetIcon, MailIcon, MessageCircleIcon, PhoneIcon, SquarePenIcon, XIcon } from "lucide-react"
-import "./support-chat.css"
-import { useChatUi, ChatUiProvider } from "./chat-context"
-import { cn } from "./cn"
-import { AgentAvatar, Avatar, Bubble, Composer, TypingDots } from "./parts"
-import type { ChatContact, ChatContext, SupportChatConfig, ChatTheme } from "./types"
-import { hasBangla } from "./rich-text"
-import { sensitiveProblem } from "./safety"
-import { useSupportChat } from "./use-support-chat"
+import { HeadsetIcon, MessageCircleIcon, SquarePenIcon, XIcon } from "lucide-react"
+import "../styles/support-chat.css"
+import { cn } from "../lib/cn"
+import { AgentAvatar, Avatar, TypingDots } from "../messages/avatars"
+import { Bubble } from "../messages/bubble"
+import { Composer } from "../messages/composer"
+import { hasBangla } from "../messages/rich-text"
+import { sensitiveProblem } from "../state/safety"
+import { useSupportChat } from "../state/use-support-chat"
+import type { ChatContact, ChatContext, SupportChatConfig } from "../types"
+import { ChatUiProvider, useChatUi } from "./chat-context"
+import { ContactLines } from "./contact"
+import { HandoffPanel } from "./handoff"
+import { themeVars } from "./theme"
+import { useSlowReply } from "./use-slow-reply"
 
 /** Anything on the page can open the chat: `window.dispatchEvent(new Event("support-chat:open"))`. */
 export const OPEN_EVENT = "support-chat:open"
-
-const wa = (n: string) => `https://wa.me/${n.replace(/\D/g, "")}`
-
-/** The support number, WhatsApp and hours: shown when nobody can pick the chat up, and whenever the assistant is off. */
-function ContactLines({ contact }: { contact: ChatContact }) {
-  const { t } = useChatUi()
-  return (
-    <ul className="mt-2 flex flex-col gap-1.5 text-sm">
-      {contact.phone && (
-        <li>
-          <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`} className="inline-flex items-center gap-2 font-semibold text-primary hover:underline">
-            <PhoneIcon className="size-4 text-(--sc-brand-text)" /> {contact.phone}
-          </a>
-        </li>
-      )}
-      {contact.whatsapp && (
-        <li>
-          <a href={wa(contact.whatsapp)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-semibold text-primary hover:underline">
-            <MessageCircleIcon className="size-4 text-(--sc-brand-text)" /> {t("whatsapp")}
-          </a>
-        </li>
-      )}
-      {contact.email && (
-        <li>
-          <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-2 font-semibold text-primary hover:underline">
-            <MailIcon className="size-4 text-(--sc-brand-text)" /> {contact.email}
-          </a>
-        </li>
-      )}
-      {contact.hours && <li className="text-xs text-muted-foreground">{contact.hours}</li>}
-    </ul>
-  )
-}
-
-function CallbackForm({ onSubmit, onClose }: { onSubmit: (name: string, phone: string, note?: string) => Promise<{ message?: string }>; onClose: (message?: string) => void }) {
-  const [name, setName] = useState("")
-  const [phone, setPhone] = useState("")
-  const [note, setNote] = useState("")
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState("")
-  const { t } = useChatUi()
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    const digits = phone.replace(/\D/g, "")
-    if (name.trim().length < 2) return setError(t("nameError"))
-    if (digits.length < 10 || digits.length > 16) return setError(t("phoneError"))
-    setBusy(true)
-    setError("")
-    try {
-      const res = await onSubmit(name.trim(), phone.trim(), note.trim() || undefined)
-      onClose(res.message ?? t("callbackThanks", { name: name.trim(), phone: phone.trim() }))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("callbackFailed"))
-      setBusy(false)
-    }
-  }
-
-  const input = "h-10 w-full rounded-lg border bg-background px-3 text-base outline-none transition-shadow focus:border-primary/40 focus:ring-3 focus:ring-ring/30 md:text-sm"
-  return (
-    <form onSubmit={submit} className="mt-3 grid gap-2 border-t pt-3">
-      <p className="text-xs font-semibold text-primary">{t("callPrompt")}</p>
-      <input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("yourName")} autoComplete="name" aria-label={t("yourName")} />
-      <input className={input} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("phoneNumber")} inputMode="tel" autoComplete="tel" aria-label={t("phoneNumber")} />
-      <textarea className={cn(input, "h-14 resize-none py-2")} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("helpPlaceholder")} maxLength={500} aria-label={t("helpLabel")} />
-      {error && (
-        <p role="alert" className="text-xs text-destructive">
-          {error}
-        </p>
-      )}
-      <div className="flex gap-2">
-        <button type="submit" disabled={busy} className="inline-flex h-9 items-center rounded-full bg-(--sc-brand) px-4 text-sm font-semibold text-(--sc-brand-fg) transition-[background-color,transform] hover:bg-(--sc-brand)/90 active:scale-95 disabled:opacity-60">
-          {busy ? t("sending") : t("callMeBack")}
-        </button>
-        <button type="button" onClick={() => onClose()} className="inline-flex h-9 items-center rounded-full border px-4 text-sm font-semibold text-foreground/80 transition-colors hover:bg-muted">
-          {t("cancel")}
-        </button>
-      </div>
-    </form>
-  )
-}
-
-/** A panel at the end of the conversation when the customer needs a person: waiting, or the number and the call-back form. */
-function HandoffPanel({ kind, contact, onCallBack }: { kind: "waiting" | "contact"; contact?: ChatContact; onCallBack: (name: string, phone: string, note?: string) => Promise<{ message?: string }> }) {
-  const [form, setForm] = useState(false)
-  const [done, setDone] = useState("")
-  const { t } = useChatUi()
-  if (done) return <p className="sc-rise mx-auto max-w-[92%] rounded-xl bg-(--sc-success)/10 px-3 py-2 text-center text-xs font-medium text-(--sc-success)">{done}</p>
-  return (
-    <div className="sc-rise rounded-xl border bg-card p-3.5">
-      <p className="flex items-center gap-2 text-sm font-semibold text-primary">
-        <HeadsetIcon className="size-4 text-(--sc-brand-text)" />
-        {kind === "waiting" ? t("waitingTitle") : t("contactTitle")}
-      </p>
-      {kind === "waiting" ? (
-        <p className="mt-1 text-xs text-muted-foreground">{t("waitingText")}</p>
-      ) : (
-        <>
-          <p className="mt-1 text-xs text-muted-foreground">{t("contactText")}</p>
-          {contact && <ContactLines contact={contact} />}
-          {!form ? (
-            <button type="button" onClick={() => setForm(true)} className="mt-3 inline-flex h-9 items-center rounded-full bg-(--sc-brand) px-4 text-sm font-semibold text-(--sc-brand-fg) transition-[background-color,transform] hover:bg-(--sc-brand)/90 active:scale-95">
-              {t("callMeBack")}
-            </button>
-          ) : (
-            <CallbackForm
-              onSubmit={onCallBack}
-              onClose={(message) => {
-                if (message) setDone(message)
-                else setForm(false)
-              }}
-            />
-          )}
-        </>
-      )}
-    </div>
-  )
-}
-
-/** The floating button and the chat window. Mount it once, in a layout. */
-/** "short" after a few seconds of waiting for the assistant, "long" after much longer. A silent wait feels broken. */
-function useSlowReply(waiting: boolean): "short" | "long" | null {
-  const [level, setLevel] = useState<"short" | "long" | null>(null)
-  useEffect(() => {
-    if (!waiting) return
-    const a = setTimeout(() => setLevel("short"), 10_000)
-    const b = setTimeout(() => setLevel("long"), 35_000)
-    return () => {
-      clearTimeout(a)
-      clearTimeout(b)
-      setLevel(null)
-    }
-  }, [waiting])
-  return level
-}
-
-/** The widget's colours as CSS variables (only the ones the project set; the rest come from support-chat.css). */
-function themeVars(theme?: ChatTheme): React.CSSProperties | undefined {
-  if (!theme) return undefined
-  const map: [keyof ChatTheme, string][] = [
-    ["brand", "--sc-brand"],
-    ["brandForeground", "--sc-brand-fg"],
-    ["brandText", "--sc-brand-text"],
-    ["ink", "--sc-ink"],
-    ["link", "--sc-link"],
-    ["success", "--sc-success"],
-  ]
-  return Object.fromEntries(map.flatMap(([k, v]) => (theme[k] ? [[v, theme[k]]] : []))) as React.CSSProperties
-}
 
 export function SupportChat(props: { config: SupportChatConfig; context: ChatContext; fallbackContact?: ChatContact }) {
   return (
@@ -374,4 +231,3 @@ function SupportChatInner({ config, context, fallbackContact }: { config: Suppor
     </>
   )
 }
-

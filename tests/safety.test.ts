@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { makeTranslate } from "../src/labels"
-import { sensitiveProblem } from "../src/safety"
+import { makeTranslate } from "../src/labels/labels"
+import { sensitiveProblem } from "../src/state/safety"
 
 const t = makeTranslate("Acme", "Acme Bot")
 

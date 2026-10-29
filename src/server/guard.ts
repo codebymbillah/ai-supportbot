@@ -1,6 +1,6 @@
 import { isIP } from "node:net"
 import { NextResponse } from "next/server"
-import type { ChatGuard } from "./server"
+import type { ChatGuard } from "./index"
 
 // A ready-made `guard` for createChatProxy, so a new project needs nothing of its own. Server only.
 //   export const { GET, POST } = createChatProxy({ apiUrl, authToken, guard: defaultGuard })

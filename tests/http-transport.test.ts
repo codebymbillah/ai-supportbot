@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { createHttpTransport } from "../src/http-transport"
+import { createHttpTransport } from "../src/transport/http-transport"
 import { ChatError } from "../src/types"
 
 // The browser side reads every field by name, so a field the backend adds by mistake never reaches the screen.

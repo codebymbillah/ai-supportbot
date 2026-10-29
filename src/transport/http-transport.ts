@@ -1,5 +1,5 @@
-import { type ChatLabels, makeTranslate, type Translate } from "./labels"
-import { type ChatCard, type ChatContact, ChatError, type ChatImage, type ChatMessage, type ChatState, type ChatTransport, EMPTY_STATE, type Sender } from "./types"
+import { type ChatLabels, makeTranslate, type Translate } from "../labels/labels"
+import { type ChatCard, type ChatContact, ChatError, type ChatImage, type ChatMessage, type ChatState, type ChatTransport, EMPTY_STATE, type Sender } from "../types"
 
 // Talks to the project's own route (default /api/chat), which adds the customer's sign-in and passes the call to the backend.
 // Every field is read by name and checked, so a field the backend adds by mistake (a supplier, a source link) never reaches the screen.

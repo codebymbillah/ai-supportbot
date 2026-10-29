@@ -1,4 +1,4 @@
-import { type ChatCard, type ChatMessage, type ChatState, type ChatTransport, EMPTY_STATE } from "./types"
+import { type ChatCard, type ChatMessage, type ChatState, type ChatTransport, EMPTY_STATE } from "../types"
 
 // A scripted stand-in for the backend, to review and test the screen before the real assistant is ready. The project brings its own scripts
 // (see src/config/support-chat-demo.ts). Replies come after a short wait, as the polled backend's do. Nothing is sent anywhere, and the
