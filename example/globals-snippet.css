@@ -1,0 +1,12 @@
+/* In the project's global CSS (Tailwind v4). One line, so Tailwind finds the classes the package uses: */
+@source "../node_modules/@techabyte/support-chat/src";
+
+/* Optional: set the chat's colours here instead of in the config. Any of these, on :root or any parent: */
+:root {
+  --sc-brand: #2563eb;
+  --sc-brand-fg: #ffffff;
+  --sc-brand-text: #1d4ed8;
+  --sc-ink: #0f172a;
+  --sc-link: #1d4ed8;
+  --sc-success: #047857;
+}

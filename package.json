@@ -1,0 +1,46 @@
+{
+  "name": "@techabyte/support-chat",
+  "version": "0.1.0",
+  "description": "An AI sales and support chat widget for Next.js, with a safe server door and a ready backend contract. Brand, colours and every sentence come from the project that uses it.",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./styles.css": "./src/support-chat.css"
+  },
+  "files": [
+    "src",
+    "example",
+    "docs",
+    "README.md",
+    "INSTALL.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run test"
+  },
+  "peerDependencies": {
+    "lucide-react": ">=0.400.0",
+    "next": ">=15.0.0",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "lucide-react": "^1.55.0",
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

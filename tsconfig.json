@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": false,
+    "paths": {
+      "@techabyte/support-chat": ["./src/index.ts"],
+      "@techabyte/support-chat/server": ["./src/server.ts"],
+      "@/*": ["./example/shim/*"]
+    }
+  },
+  "include": ["src", "tests", "example"]
+}

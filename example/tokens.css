@@ -1,0 +1,31 @@
+/* The standard (shadcn) colour tokens the chat's surfaces use. A project made with shadcn/ui already has them; a plain Tailwind v4 project
+   adds this once to its global CSS (change the values to taste). The brand colours are separate: see globals-snippet.css. */
+@import "tailwindcss";
+
+:root {
+  --background: #fafafa;
+  --foreground: #171717;
+  --card: #ffffff;
+  --muted: #f1f1f1;
+  --muted-foreground: #6b6b6b;
+  --accent: #eaf0ff;
+  --border: #e4e4e7;
+  --ring: #93b4f5;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --destructive: #dc2626;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+}
