@@ -5,12 +5,21 @@ An AI sales and support chat for Next.js: a floating button and a chat window, a
 ## How it is used
 The chat has two halves that work together: this package (the chat box on the website) and a backend that writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`).
 
-**On another Next.js website** (works today):
-1. Install it: `npm install github:TechaByte-Solutions/support-chat-kit#v0.1.2` and add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`.
-2. Add one line to the global CSS so Tailwind finds its classes: `@source "../node_modules/@techabyte/support-chat/src";`
-3. Add a route `app/api/chat/[...path]/route.ts` with `createChatProxy({ apiUrl, authToken })`: the safe door to the backend (copy `example/route.ts`).
-4. Write one small component with the site's name, colours and words, and mount it once in the layout (copy `example/support-chat.tsx`). Colours, every sentence and a ready Bangla set are options, nothing is fixed to one brand.
-5. Point `apiUrl` at a backend that follows `docs/CONTRACT.md`. Until the backend is ready, the scripted demo (`createDemoTransport`) shows the chat with sample answers.
+**On another Next.js website** (works today), three steps and one setting:
+1. `npm install github:TechaByte-Solutions/support-chat-kit#v0.2.0`, then add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`, and one line to the global CSS: `@source "../node_modules/@techabyte/support-chat/src";`
+2. Create `app/api/chat/[...path]/route.ts` with two lines (the safe door to the backend):
+   ```ts
+   import { createChatProxy } from "@techabyte/support-chat/server"
+   export const { GET, POST } = createChatProxy()
+   ```
+3. Put the chat in the layout, with the site's name:
+   ```tsx
+   import { SupportChat } from "@techabyte/support-chat"
+   <SupportChat config={{ brandName: "Acme Books" }} />
+   ```
+4. Set `API_URL=https://your-backend.com/api/v1` in `.env`.
+
+That is all. The chat reads the backend's own chat settings (assistant name, greeting, suggestion chips, photos, and the on/off switch) and shows nothing while the backend says it is off. Colours, every sentence (a ready Bangla set is included), the money format, a cart button and the Bangla font are options in the same `config`; see `example/custom-setup.tsx` and `INSTALL.md`. The backend must follow `docs/CONTRACT.md`. To see the chat before the backend is ready, use the scripted demo (`createDemoTransport`).
 
 **On WordPress or Shopify** (planned, not built): a plugin or app that adds the same chat through a script, with the chat service hosted by us. The plan is in `docs/BACKEND-MODULE.md`.
 

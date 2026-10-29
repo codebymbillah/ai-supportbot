@@ -1,6 +1,7 @@
 "use client"
 
-// components/support-chat.tsx: this project's setup of the chat. Brand, words, colours and the cart all live here, nothing inside the package.
+// components/support-chat.tsx: the FULL setup, for a project that wants its own words, colours, money format, cart or Bangla font.
+// Most projects need none of this: see minimal-layout.tsx.
 import { usePathname } from "next/navigation"
 import { useMemo } from "react"
 import { BANGLA_LABELS, createHttpTransport, SupportChat, type SupportChatConfig } from "@techabyte/support-chat"

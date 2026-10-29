@@ -1,6 +1,6 @@
 {
   "name": "@techabyte/support-chat",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "An AI sales and support chat widget for Next.js, with a safe server door and a ready backend contract. Brand, colours and every sentence come from the project that uses it.",
   "private": true,
   "type": "module",

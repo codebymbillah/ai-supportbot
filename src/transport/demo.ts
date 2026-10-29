@@ -60,6 +60,9 @@ export function createDemoTransport({ scripts, fallback, contact = { phone: "+88
       return { agentsOnline: false }
     },
     async feedback() {},
+    async config() {
+      return { enabled: true }
+    },
     async close() {
       messages = []
       state = EMPTY_STATE

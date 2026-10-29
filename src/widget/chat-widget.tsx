@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { usePathname } from "next/navigation"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { HeadsetIcon, MessageCircleIcon, SquarePenIcon, XIcon } from "lucide-react"
 import "../styles/support-chat.css"
 import { cn } from "../lib/cn"
@@ -10,22 +11,55 @@ import { Composer } from "../messages/composer"
 import { hasBangla } from "../messages/rich-text"
 import { sensitiveProblem } from "../state/safety"
 import { useSupportChat } from "../state/use-support-chat"
-import type { ChatContact, ChatContext, SupportChatConfig } from "../types"
+import type { ChatContact, ChatContext, RemoteChatConfig, SupportChatConfig, SupportChatInput } from "../types"
 import { ChatActionsProvider, ChatUiProvider, useChatUi } from "./chat-context"
 import { ContactLines } from "./contact"
 import { HandoffPanel } from "./handoff"
+import { resolveConfig } from "./resolve-config"
 import { themeVars } from "./theme"
 import { useSlowReply } from "./use-slow-reply"
 
 /** Anything on the page can open the chat: `window.dispatchEvent(new Event("support-chat:open"))`. */
 export const OPEN_EVENT = "support-chat:open"
 
-export function SupportChat(props: { config: SupportChatConfig; context: ChatContext; fallbackContact?: ChatContact }) {
+const ON: RemoteChatConfig = { enabled: true }
+
+/**
+ * The floating button and the chat window. Mount it once, in a layout: `<SupportChat config={{ brandName: "Acme" }} />` is enough.
+ * Without a transport of its own it reads the backend's chat settings and shows nothing while the backend says the chat is off.
+ */
+export function SupportChat({ config: input, context, fallbackContact }: { config: SupportChatInput; context?: ChatContext; fallbackContact?: ChatContact }) {
+  const pathname = usePathname()
+  const fromBackend = input.useBackendConfig ?? !input.transport
+  // undefined: not known yet. null: the backend could not say (the chat has no settings, or it is unreachable): nothing is shown.
+  const [remote, setRemote] = useState<RemoteChatConfig | null | undefined>(undefined)
+
+  const transport = useMemo(() => resolveConfig(input).transport, [input])
+  const ask = fromBackend ? transport.config : undefined
+  useEffect(() => {
+    if (!ask) return
+    let alive = true
+    ask().then(
+      (r) => alive && setRemote(r ?? null),
+      () => alive && setRemote(null)
+    )
+    return () => {
+      alive = false
+    }
+    // Asked once per mount: the backend's answer is cached on its side for a minute.
+  }, [ask])
+
+  // A transport that cannot say (it has no config call) means the project decides: the chat is on.
+  const known = fromBackend && !ask ? ON : remote
+  const config = useMemo(() => resolveConfig(input, known ?? undefined), [input, known])
+  const page = useMemo<ChatContext>(() => context ?? { path: pathname }, [context, pathname])
+  if (fromBackend && (!known || !known.enabled)) return null
+
   return (
-    <ChatUiProvider config={props.config}>
+    <ChatUiProvider config={config}>
       {/* `contents`: no box of its own, it only carries the colour variables to the launcher and the window. */}
-      <div className="sc-theme contents" style={themeVars(props.config.theme)}>
-        <SupportChatInner {...props} />
+      <div className="sc-theme contents" style={themeVars(config.theme)}>
+        <SupportChatInner config={config} context={page} fallbackContact={fallbackContact} />
       </div>
     </ChatUiProvider>
   )

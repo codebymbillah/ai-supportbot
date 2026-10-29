@@ -130,6 +130,8 @@ export interface ChatTransport {
   feedback(req: { messageId: number; value: "up" | "down"; guestToken?: string }): Promise<void>
   /** The customer started a new chat: close this conversation on the backend. Optional; a failure is ignored (the browser still starts fresh). */
   close?(req: { guestToken?: string }): Promise<void>
+  /** What the backend says about the chat (GET /chat/config): on or off, names, greeting, chips, photos. Optional. */
+  config?(): Promise<RemoteChatConfig | undefined>
   handoff(req: { name: string; phone: string; note?: string; guestToken?: string }): Promise<{ message?: string }>
   /** The customer pressed a button on a draft the assistant prepared. A second confirm throws a ChatError with status 409. */
   actDraft(req: { draftId: string; action: "confirm" | "dismiss"; guestToken?: string }): Promise<{ message?: string; code?: string; href?: string }>
@@ -188,4 +190,27 @@ export interface SupportChatConfig {
   theme?: ChatTheme
   /** Any of the widget's own sentences, in this project's words or language (see labels.ts for the list). */
   labels?: Partial<import("./labels/labels").ChatLabels>
+}
+
+/** What the backend's GET /chat/config says. The widget reads it itself when the project does not bring its own transport. */
+export interface RemoteChatConfig {
+  enabled: boolean
+  assistantName?: string
+  tagline?: string
+  greeting?: string
+  suggestions?: { label: string; message: string }[]
+  images?: ChatImageRules
+}
+
+/**
+ * What a project passes to <SupportChat>. Only `brandName` is required; everything else has a default, and when the project brings no
+ * transport the widget talks to `apiBase` (default /api/chat) and takes names, greeting, chips, photo rules and the on/off switch from
+ * the backend's own settings. Anything the project sets itself wins over the backend's.
+ */
+export type SupportChatInput = Partial<Omit<SupportChatConfig, "brandName">> & {
+  brandName: string
+  /** Where the project's chat route is. Default /api/chat. */
+  apiBase?: string
+  /** Read the backend's chat settings in the browser. Default: yes when the project brings no transport of its own. */
+  useBackendConfig?: boolean
 }

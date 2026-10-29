@@ -165,6 +165,25 @@ export function createHttpTransport(base = "/api/chat", opts: { brandName?: stri
       await post("/feedback", { message_id: messageId, value, guest_token: guestToken }).catch(() => undefined)
     },
 
+    async config() {
+      const body = await call("/config", { headers: { Accept: "application/json" } }).catch(() => undefined)
+      if (!body) return undefined
+      const d = isObj(body.data) ? body.data : body
+      const imgs = isObj(d.images) ? d.images : undefined
+      const between = (v: unknown, lo: number, hi: number, fallback: number) => Math.min(hi, Math.max(lo, num(v) ?? fallback))
+      const suggestions = Array.isArray(d.suggestions)
+        ? d.suggestions.filter(isObj).flatMap((s) => (str(s.label) && str(s.message) ? [{ label: str(s.label)!.slice(0, 60), message: str(s.message)!.slice(0, 300) }] : [])).slice(0, 6)
+        : undefined
+      return {
+        enabled: d.enabled === true,
+        assistantName: str(d.assistant_name),
+        tagline: str(d.tagline),
+        greeting: str(d.greeting),
+        suggestions: suggestions?.length ? suggestions : undefined,
+        images: imgs?.enabled === true ? { enabled: true, maxPerMessage: between(imgs.max_per_message, 1, 3, 3), maxFileMb: between(imgs.max_file_mb, 1, 5, 5) } : undefined,
+      }
+    },
+
     async close({ guestToken }) {
       await post("/close", { guest_token: guestToken }).catch(() => undefined)
     },

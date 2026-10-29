@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 (29 Oct 2026)
+Easier to install. Nothing that worked before is removed.
+- `<SupportChat config={{ brandName: "Acme" }} />` is enough: every other setting has a default, `context` defaults to the current path, and without a transport of its own the widget talks to `/api/chat` and takes the assistant's name, greeting, suggestion chips, photo rules and the on/off switch from the backend's `GET /chat/config` (nothing is shown while the backend says it is off or cannot answer). A setting the project gives wins over the backend's.
+- `createChatProxy()` needs no arguments: it reads `API_URL`, treats everyone as a visitor, and says plainly when `API_URL` is missing. The route now also passes `GET config`.
+- `example/` has a one-line route, a minimal layout and a full custom setup. 31 tests.
+
 ## 0.1.2 (29 Oct 2026)
 - A photo whose signed link has expired (the backend's links last six hours) is read again from the backend once, at most every 20 seconds, to get a fresh link; until then an empty frame shows instead of a broken image.
 - A photo the assistant did not review is drawn like any other (the backend already tells the customer with a system message); the extra note and its label `photoForTeam` are removed.

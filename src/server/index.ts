@@ -8,7 +8,7 @@ export { defaultGuard }
 
 // The support assistant's door to the backend, for the project's route handler (app/api/chat/[...path]/route.ts):
 //   import { createChatProxy } from "@/addons/support-chat/server"
-//   export const { GET, POST } = createChatProxy({ apiUrl, authToken, guard })
+//   export const { GET, POST } = createChatProxy()   // reads API_URL; or createChatProxy({ apiUrl, authToken, guard })
 // Import it only from server code. The browser never calls the backend for the chat itself: this checks the request, adds the customer's
 // sign-in when there is one (the token is a cookie only the server can read), passes the visitor's address on for the backend's own limits,
 // and returns the answer. Only the calls below pass. A body is rebuilt field by field, so nothing else the browser sends reaches the backend.
@@ -30,10 +30,10 @@ export interface ChatGuard {
 
 /** What the project lends the door: the pieces that depend on its sign-in and its way of limiting requests. */
 export interface ChatProxyOptions {
-  /** Base address of the backend API, e.g. https://admin.example.com/api/v1 */
-  apiUrl: string
-  /** The signed-in customer's token (read from the project's cookie), or undefined for a visitor. */
-  authToken: () => Promise<string | undefined>
+  /** Base address of the backend API, e.g. https://admin.example.com/api/v1. Default: the `API_URL` environment variable. */
+  apiUrl?: string
+  /** The signed-in customer's token (read from the project's cookie), or undefined for a visitor. Default: every caller is a visitor. */
+  authToken?: () => Promise<string | undefined>
   /** The project's own request safety. Leave it out to use `defaultGuard` (guard.ts). */
   guard?: ChatGuard
   /** Photos in a message: how many files and how large each may be. `false` refuses photos. Default: 3 files of 5 MB. */
@@ -52,11 +52,13 @@ const DEFAULT_LIMITS = {
   drafts: [[10, 60_000]],
   poll: [[75, 60_000]],
   status: [[20, 60_000]],
+  config: [[30, 60_000]],
 } satisfies Record<string, [number, number][]>
 
 function place(parts: string[], method: "GET" | "POST") {
   const [kind, id] = parts
   if (method === "GET") {
+    if (parts.length === 1 && kind === "config") return { kind: "config", path: "config" }
     if (parts.length === 1 && kind === "messages") return { kind: "poll", path: "messages" }
     if (parts.length === 1 && kind === "status") return { kind: "status", path: "status" }
     return undefined
@@ -76,13 +78,16 @@ function pass(res: Response, data: unknown) {
   return NextResponse.json({ message, errors, contact }, { status: res.status, headers })
 }
 
-export function createChatProxy({ apiUrl, authToken, guard = defaultGuard, limits, images = { maxFiles: 3, maxBytes: 5 * 1024 * 1024 } }: ChatProxyOptions) {
+export function createChatProxy({ apiUrl: given, authToken = async () => undefined, guard = defaultGuard, limits, images = { maxFiles: 3, maxBytes: 5 * 1024 * 1024 } }: ChatProxyOptions = {}) {
   const allowed: Record<string, [number, number][]> = { ...DEFAULT_LIMITS, ...limits }
 
   async function forward(req: Request, { params }: { params: Promise<{ path: string[] }> }) {
     const method = req.method === "GET" ? "GET" : "POST"
     const target = place((await params).path, method)
     if (!target) return NextResponse.json({ message: "Not found." }, { status: 404 })
+    // Read when a call arrives, so a missing setting says what is wrong instead of failing the build.
+    const apiUrl = (given ?? process.env.API_URL ?? "").replace(/\/+$/, "")
+    if (!apiUrl) return NextResponse.json({ message: "The chat is not set up: the API_URL setting is missing." }, { status: 500 })
 
     if (method === "POST") {
       const blocked = guard.crossSite(req)
