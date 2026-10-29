@@ -2,6 +2,20 @@
 
 An AI sales and support chat for Next.js: a floating button and a chat window, a safe server door to the backend, a scripted demo for review, and a written backend contract. Built for TransfarX first. A new project brings its own name, colours, words and backend tools; nothing inside the package names a brand.
 
+## How it is used
+The chat has two halves that work together: this package (the chat box on the website) and a backend that writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`).
+
+**On another Next.js website** (works today):
+1. Install it: `npm install github:TechaByte-Solutions/support-chat-kit#v0.1.0` and add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`.
+2. Add one line to the global CSS so Tailwind finds its classes: `@source "../node_modules/@techabyte/support-chat/src";`
+3. Add a route `app/api/chat/[...path]/route.ts` with `createChatProxy({ apiUrl, authToken })`: the safe door to the backend (copy `example/route.ts`).
+4. Write one small component with the site's name, colours and words, and mount it once in the layout (copy `example/support-chat.tsx`). Colours, every sentence and a ready Bangla set are options, nothing is fixed to one brand.
+5. Point `apiUrl` at a backend that follows `docs/CONTRACT.md`. Until the backend is ready, the scripted demo (`createDemoTransport`) shows the chat with sample answers.
+
+**On WordPress or Shopify** (planned, not built): a plugin or app that adds the same chat through a script, with the chat service hosted by us. The plan is in `docs/BACKEND-MODULE.md`.
+
+Full steps and the checklist before going live: `INSTALL.md`.
+
 ## What the visitor gets
 The visitor writes in any language and the assistant answers a few seconds later, with cards when useful (products, an order estimate, a sourcing request to confirm). They can attach up to three photos, rate an answer, start a new chat, ask for a person, and leave a number for a call-back. A team member can take the chat over in the same window. It is full screen on a phone.
 
