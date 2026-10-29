@@ -4,9 +4,9 @@ For a Next.js 15 or 16 project with Tailwind v4. About an hour with a ready back
 
 ## 1. Add the package
 ```
-npm install github:<owner>/support-chat-kit#v0.1.1
+npm install github:<owner>/support-chat-kit#v0.1.2
 ```
-(or `npm install ./techabyte-support-chat-0.1.1.tgz` from `npm pack`). It ships TypeScript source, so let Next compile it, in `next.config.ts`:
+(or `npm install ./techabyte-support-chat-0.1.2.tgz` from `npm pack`). It ships TypeScript source, so let Next compile it, in `next.config.ts`:
 ```ts
 const config: NextConfig = { transpilePackages: ["@techabyte/support-chat"] }
 ```

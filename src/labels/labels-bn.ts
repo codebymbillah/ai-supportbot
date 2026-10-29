@@ -63,7 +63,6 @@ export const BANGLA_LABELS: ChatLabels = {
   attachPhoto: "ছবি যোগ করুন",
   removePhoto: "ছবি সরান",
   photoAlt: "আপনার পাঠানো ছবি",
-  photoForTeam: "আমাদের টিম এই ছবিটি দেখবে।",
   tooManyPhotos: "এক বার্তায় সর্বোচ্চ {max}টি ছবি পাঠানো যায়।",
   photoTooBig: "একটি ছবি {mb} MB-এর বেশি বড়।",
   notAPhoto: "শুধু JPEG, PNG বা WebP ছবি পাঠানো যায়।",

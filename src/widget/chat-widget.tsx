@@ -11,7 +11,7 @@ import { hasBangla } from "../messages/rich-text"
 import { sensitiveProblem } from "../state/safety"
 import { useSupportChat } from "../state/use-support-chat"
 import type { ChatContact, ChatContext, SupportChatConfig } from "../types"
-import { ChatUiProvider, useChatUi } from "./chat-context"
+import { ChatActionsProvider, ChatUiProvider, useChatUi } from "./chat-context"
 import { ContactLines } from "./contact"
 import { HandoffPanel } from "./handoff"
 import { themeVars } from "./theme"
@@ -104,7 +104,7 @@ function SupportChatInner({ config, context, fallbackContact }: { config: Suppor
   const slow = useSlowReply(chat.awaiting && !state.handoff)
 
   return (
-    <>
+    <ChatActionsProvider value={{ refreshPhotos: chat.refreshPhotos }}>
       {!open && (
         <button
           ref={launcher}
@@ -228,6 +228,6 @@ function SupportChatInner({ config, context, fallbackContact }: { config: Suppor
           </p>
         </section>
       )}
-    </>
+    </ChatActionsProvider>
   )
 }

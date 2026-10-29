@@ -6,7 +6,7 @@ An AI sales and support chat for Next.js: a floating button and a chat window, a
 The chat has two halves that work together: this package (the chat box on the website) and a backend that writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`).
 
 **On another Next.js website** (works today):
-1. Install it: `npm install github:TechaByte-Solutions/support-chat-kit#v0.1.1` and add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`.
+1. Install it: `npm install github:TechaByte-Solutions/support-chat-kit#v0.1.2` and add `transpilePackages: ["@techabyte/support-chat"]` to `next.config.ts`.
 2. Add one line to the global CSS so Tailwind finds its classes: `@source "../node_modules/@techabyte/support-chat/src";`
 3. Add a route `app/api/chat/[...path]/route.ts` with `createChatProxy({ apiUrl, authToken })`: the safe door to the backend (copy `example/route.ts`).
 4. Write one small component with the site's name, colours and words, and mount it once in the layout (copy `example/support-chat.tsx`). Colours, every sentence and a ready Bangla set are options, nothing is fixed to one brand.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 (29 Oct 2026)
+- A photo whose signed link has expired (the backend's links last six hours) is read again from the backend once, at most every 20 seconds, to get a fresh link; until then an empty frame shows instead of a broken image.
+- A photo the assistant did not review is drawn like any other (the backend already tells the customer with a system message); the extra note and its label `photoForTeam` are removed.
+
 ## 0.1.1 (29 Oct 2026)
 Only the layout of `src/` changed: files are grouped in folders (server, widget, messages, cards, transport, state, labels, styles), large files are split, and the example no longer needs a shim file. The two public entries and their behaviour are the same. The photo and form checks in the route moved to `server/photos.ts`.
 

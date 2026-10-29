@@ -166,6 +166,17 @@ export function useSupportChat(config: SupportChatConfig, context: ChatContext, 
     [poll, storageKey, t, transport]
   )
 
+  /** The backend's photo links work for a few hours. When one fails to load, read the whole conversation again (at most every 20 s) to get fresh links. */
+  const lastRefresh = useRef(0)
+  const refreshPhotos = useCallback(() => {
+    if (Date.now() - lastRefresh.current < 20_000) return
+    lastRefresh.current = Date.now()
+    void transport
+      .poll({ after: 0, guestToken: token.current })
+      .then((res) => merge(res.messages))
+      .catch(() => undefined)
+  }, [merge, transport])
+
   const callBack = useCallback((name: string, phone: string, note?: string) => transport.handoff({ name, phone, note, guestToken: token.current }), [transport])
 
   /** A new chat: ask the backend to close this conversation (it stays in the team's inbox as closed), then forget the key here. */
@@ -179,5 +190,5 @@ export function useSupportChat(config: SupportChatConfig, context: ChatContext, 
     setError(null)
   }, [messages.length, storageKey, transport])
 
-  return { messages, state, error, drafts, awaiting, send, retry, rate, actDraft, callBack, reset, clearError: () => setError(null) }
+  return { messages, state, error, drafts, awaiting, send, retry, rate, actDraft, callBack, reset, refreshPhotos, clearError: () => setError(null) }
 }

@@ -17,6 +17,15 @@ export function ChatUiProvider({ config, children }: { config: SupportChatConfig
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 
+interface ChatActions {
+  /** Ask the backend for the conversation again, once in a while: a photo link that has expired comes back signed anew. */
+  refreshPhotos: () => void
+}
+
+const Actions = createContext<ChatActions>({ refreshPhotos: () => undefined })
+export const ChatActionsProvider = Actions.Provider
+export const useChatActions = () => useContext(Actions)
+
 export function useChatUi() {
   const v = useContext(Ctx)
   if (!v) throw new Error("useChatUi must be used inside <SupportChat>")

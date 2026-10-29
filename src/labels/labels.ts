@@ -68,7 +68,6 @@ export const DEFAULT_LABELS = {
   attachPhoto: "Attach a photo",
   removePhoto: "Remove photo",
   photoAlt: "Photo you sent",
-  photoForTeam: "Our team will look at this photo.",
   tooManyPhotos: "You can send up to {max} photos in one message.",
   photoTooBig: "A photo is larger than {mb} MB.",
   notAPhoto: "Only JPEG, PNG or WebP photos can be sent.",
