@@ -1,6 +1,6 @@
 {
   "name": "dotbyte-chat",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "An AI sales and support chat widget for Next.js, with a safe server door and a ready backend contract. Brand, colours and every sentence come from the project that uses it.",
   "private": true,
   "type": "module",

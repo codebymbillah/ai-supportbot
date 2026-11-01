@@ -1,11 +1,11 @@
-# Context: turning the Laravel chat into a package any project can install
+# Context: turning the Laravel chat into dotbyte-chat, a package any project can install
 
 Hand this file to the backend developer (or to an AI coding assistant working in the Laravel repository) before they start. It says what exists, what to build, the rules that cannot change, and when the work is done. Details: `BACKEND-MODULE.md` (the module/adapter split), `CONTRACT.md` (every call the website makes).
 
 ## 1. Where we are
 - **Website side: done.** The chat is a package, `dotbyte-chat`. A Next.js project installs and sets it up with one command:
   ```
-  npx github:TechaByte-Solutions/dotbyte-chat#v0.5.0 init --brand "Project Name" --api-url https://backend.example.com/api/v1 --layout
+  npx github:TechaByte-Solutions/dotbyte-chat#v0.5.1 init --brand "Project Name" --api-url https://backend.example.com/api/v1 --layout
   ```
   The website never talks to the AI. Its own server route forwards a fixed list of calls to `{API_URL}/chat/*` and polls for answers. No streaming.
 - **Backend side: not reusable yet.** The working chat (conversations, AI loop, tools, inbox, settings) lives inside the TransfarX Laravel app, mixed with TransfarX code (products, sourcing requests, supplier rules). A second project cannot use it without copying and editing it.
@@ -79,7 +79,7 @@ php artisan dotbyte-chat:check
 ```
 Then, in the project's Next.js site:
 ```
-npx github:TechaByte-Solutions/dotbyte-chat#v0.5.0 init --brand "Project Name" --api-url https://that-backend/api/v1 --layout
+npx github:TechaByte-Solutions/dotbyte-chat#v0.5.1 init --brand "Project Name" --api-url https://that-backend/api/v1 --layout
 ```
 and the chat works end to end.
 

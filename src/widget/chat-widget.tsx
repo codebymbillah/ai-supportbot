@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { HeadsetIcon, MessageCircleIcon, SquarePenIcon, XIcon } from "lucide-react"
 import "../styles/dotbyte-chat.css"
 import { cn } from "../lib/cn"
@@ -26,11 +26,22 @@ const OLD_OPEN_EVENT = "support-chat:open"
 
 const ON: RemoteChatConfig = { enabled: true }
 
+type ChatProps = { config: SupportChatInput; context?: ChatContext; fallbackContact?: ChatContact }
+
 /**
  * The floating button and the chat window. Mount it once, in a layout: `<DotbyteChat config={{ brandName: "Acme" }} />` is enough.
  * Without a transport of its own it reads the backend's chat settings and shows nothing while the backend says the chat is off.
  */
-export function DotbyteChat({ config: input, context, fallbackContact }: { config: SupportChatInput; context?: ChatContext; fallbackContact?: ChatContact }) {
+export function DotbyteChat(props: ChatProps) {
+  // It reads the page address, which Next.js (with cacheComponents) only allows inside <Suspense>; the button needs nothing to fall back to.
+  return (
+    <Suspense fallback={null}>
+      <ChatRoot {...props} />
+    </Suspense>
+  )
+}
+
+function ChatRoot({ config: input, context, fallbackContact }: ChatProps) {
   const pathname = usePathname()
   const fromBackend = input.useBackendConfig ?? !input.transport
   // undefined: not known yet. null: the backend could not say (the chat has no settings, or it is unreachable): nothing is shown.

@@ -4,7 +4,7 @@ import { runInit } from "./init.mjs"
 const HELP = `dotbyte-chat: set up the chat in a Next.js project
 
 Usage (run in the project's root folder). One command: it also installs the package.
-  npx github:TechaByte-Solutions/dotbyte-chat#v0.5.0 init [options]
+  npx github:TechaByte-Solutions/dotbyte-chat#v0.5.1 init [options]
   (if the package is already installed: npx dotbyte-chat init [options])
 
 Options:

@@ -6,7 +6,7 @@ import { Button, Card, CopyButton, Field, Input, PageTitle, TagList } from "@/co
 import { deleteSite, renameSite, rotateKey, setDomains, useSite } from "@/lib/store"
 
 // The release the install command points at. Keep it in step with the kit's version.
-const KIT = "github:TechaByte-Solutions/dotbyte-chat#v0.5.0"
+const KIT = "github:TechaByte-Solutions/dotbyte-chat#v0.5.1"
 
 export default function InstallPage() {
   const { siteId } = useParams<{ siteId: string }>()
