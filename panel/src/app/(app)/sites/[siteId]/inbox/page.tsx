@@ -23,7 +23,7 @@ export default function InboxPage() {
   const chat = site.chats.find((c) => c.id === selected) ?? null
 
   return (
-    <>
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <PageTitle title="Inbox" hint="Chats from your visitors. Take a chat over when the assistant needs help, and answer in the same window." />
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <div>
@@ -37,7 +37,7 @@ export default function InboxPage() {
                   setTab(t.id)
                   setSelected(null)
                 }}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium ${tab === t.id ? "bg-brand text-brand-ink" : "text-muted hover:bg-line/50"}`}
+                className={`h-8 rounded-full px-3.5 text-sm font-medium ${tab === t.id ? "bg-ink text-surface" : "text-muted hover:bg-sunken hover:text-ink"}`}
               >
                 {t.label}
               </button>
@@ -57,13 +57,13 @@ export default function InboxPage() {
                         markRead(site.id, c.id)
                       }}
                       aria-current={selected === c.id}
-                      className={`w-full rounded-xl border bg-surface p-3 text-left hover:border-brand ${selected === c.id ? "border-brand" : "border-line"}`}
+                      className={`w-full rounded-2xl border bg-surface p-4 text-left hover:border-line-strong ${selected === c.id ? "border-brand" : "border-line"}`}
                     >
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-medium">{c.visitor}</span>
                         {c.unread && <span className="size-2 rounded-full bg-brand" aria-label="Unread" />}
                       </span>
-                      <span className="mt-0.5 line-clamp-1 block text-sm text-muted">{last?.text}</span>
+                      <span className="mt-1 line-clamp-2 text-sm leading-5 text-muted">{last?.text}</span>
                       <span className="mt-2 flex gap-1.5">
                         <Badge tone={c.status === "agent" ? "warn" : "plain"}>{STATUS[c.status]}</Badge>
                         {c.flagged && <Badge tone="bad">Needs attention</Badge>}
@@ -77,14 +77,14 @@ export default function InboxPage() {
         </div>
         <div>{chat ? <Conversation key={chat.id} chat={chat} siteId={site.id} onGone={() => setSelected(null)} /> : <Empty title="Choose a chat">Its messages show here.</Empty>}</div>
       </div>
-    </>
+    </div>
   )
 }
 
 function Conversation({ chat, siteId, onGone }: { chat: Chat; siteId: string; onGone: () => void }) {
   const [text, setText] = useState("")
   return (
-    <section className="flex min-h-[420px] flex-col rounded-xl border border-line bg-surface" aria-label={`Chat with ${chat.visitor}`}>
+    <section className="flex min-h-[480px] flex-col overflow-hidden rounded-2xl border border-line bg-surface" aria-label={`Chat with ${chat.visitor}`}>
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
         <div>
           <p className="font-semibold">{chat.visitor}</p>
@@ -128,7 +128,7 @@ function Conversation({ chat, siteId, onGone }: { chat: Chat; siteId: string; on
             </li>
           ) : (
             <li key={m.id} className={`flex flex-col ${m.from === "customer" ? "items-start" : "items-end"}`}>
-              <p className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${m.from === "customer" ? "bg-bg" : m.from === "agent" ? "bg-brand text-brand-ink" : "border border-line"}`}>{m.text}</p>
+              <p className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${m.from === "customer" ? "bg-sunken" : m.from === "agent" ? "bg-brand text-brand-ink" : "border border-line"}`}>{m.text}</p>
               <span className="mt-1 text-xs text-muted">
                 {m.from === "customer" ? "Visitor" : m.from === "agent" ? "Team" : "Assistant"} · {fmtDate(m.at)}
               </span>

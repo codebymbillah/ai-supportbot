@@ -11,7 +11,7 @@ export default function SitesPage() {
   const [created, setCreated] = useState<{ name: string; key: string } | null>(null)
 
   return (
-    <>
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <PageTitle
         title="Your sites"
         hint="Each site has its own key, settings, products and chats. Nothing is shared between sites."
@@ -23,10 +23,10 @@ export default function SitesPage() {
       />
 
       {created && (
-        <div className="mb-6">
+        <div>
           <Card title={`${created.name} is ready`} hint="Copy the key now. It is shown only this once; if you lose it, make a new one.">
             <div className="flex flex-wrap items-center gap-3">
-              <code className="break-all rounded-lg bg-bg px-3 py-2 text-sm">{created.key}</code>
+              <code className="break-all rounded-[10px] bg-sunken px-3 py-2 font-mono text-[13px]">{created.key}</code>
               <CopyButton text={created.key} />
               <Button variant="ghost" small onClick={() => setCreated(null)}>
                 Done
@@ -37,7 +37,7 @@ export default function SitesPage() {
       )}
 
       {adding && (
-        <div className="mb-6">
+        <div>
           <NewSite
             onCancel={() => setAdding(false)}
             onCreated={(name, key) => {
@@ -54,24 +54,24 @@ export default function SitesPage() {
         <ul className="grid gap-4 md:grid-cols-2">
           {sites.map((s) => (
             <li key={s.id}>
-              <Link href={`/sites/${s.id}`} className="block rounded-xl border border-line bg-surface p-5 hover:border-brand">
+              <Link href={`/sites/${s.id}`} className="block rounded-2xl border border-line bg-surface p-6 hover:border-line-strong hover:shadow-[0_12px_32px_-20px_rgba(24,32,43,.35)]">
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="font-semibold">{s.name}</h2>
-                  <Badge tone={s.settings.enabled ? "ok" : "plain"}>{s.settings.enabled ? "Chat on" : "Chat off"}</Badge>
+                  <Badge dot tone={s.settings.enabled ? "ok" : "plain"}>{s.settings.enabled ? "Chat on" : "Chat off"}</Badge>
                 </div>
                 <p className="mt-1 text-sm text-muted">{s.domains.join(", ") || "No domain yet"}</p>
-                <dl className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                <dl className="mt-6 grid grid-cols-3 gap-2 border-t border-line pt-4">
                   <div>
-                    <dt className="text-muted">Chats</dt>
-                    <dd className="font-medium">{s.usage.chats}</dd>
+                    <dt className="text-[13px] text-muted">Chats</dt>
+                    <dd className="mt-0.5 text-xl font-semibold tabular-nums">{s.usage.chats}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted">Products</dt>
-                    <dd className="font-medium">{s.products.length}</dd>
+                    <dt className="text-[13px] text-muted">Products</dt>
+                    <dd className="mt-0.5 text-xl font-semibold tabular-nums">{s.products.length}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted">Open</dt>
-                    <dd className="font-medium">{s.chats.filter((c) => c.status !== "closed").length}</dd>
+                    <dt className="text-[13px] text-muted">Open</dt>
+                    <dd className="mt-0.5 text-xl font-semibold tabular-nums">{s.chats.filter((c) => c.status !== "closed").length}</dd>
                   </div>
                 </dl>
               </Link>
@@ -79,7 +79,7 @@ export default function SitesPage() {
           ))}
         </ul>
       )}
-    </>
+    </div>
   )
 }
 

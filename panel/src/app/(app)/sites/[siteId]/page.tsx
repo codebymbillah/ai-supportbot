@@ -2,7 +2,7 @@
 
 import { useRouter, useParams } from "next/navigation"
 import { useState } from "react"
-import { Button, Card, CopyButton, Field, Input, TagList } from "@/components/ui"
+import { Button, Card, CopyButton, Field, Input, PageTitle, TagList } from "@/components/ui"
 import { deleteSite, renameSite, rotateKey, setDomains, useSite } from "@/lib/store"
 
 // The release the install command points at. Keep it in step with the kit's version.
@@ -21,19 +21,25 @@ export default function InstallPage() {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
-      <Card title="Install on your website" hint="Run this one command in your Next.js project's main folder, then restart the dev server. Nothing else changes on your side.">
-        <div className="grid gap-3">
-          <pre className="overflow-x-auto rounded-lg bg-bg p-3 text-sm">{command}</pre>
-          <div className="flex flex-wrap gap-2">
-            <CopyButton text={command} label="Copy command" />
+      <PageTitle title={site.name} hint="Put the chat on your website with one command. Everything after that is set here, with no change to your site's code." />
+      <section className="overflow-hidden rounded-2xl bg-side text-side-ink">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5">
+          <div>
+            <h2 className="text-[15px] font-semibold">Install command</h2>
+            <p className="mt-0.5 text-sm text-side-muted">Run it in your Next.js project&apos;s main folder, then restart the dev server.</p>
           </div>
-          {!fresh && <p className="text-sm text-muted">Replace {"<your key>"} with your key. For safety the full key is shown only when it is made: make a new one below if you no longer have it.</p>}
+          <CopyButton text={command} label="Copy command" />
         </div>
-      </Card>
+        <pre className="mt-4 overflow-x-auto border-t border-side-line px-6 py-5 font-mono text-[13px] leading-6">
+          <span className="select-none text-side-muted">$ </span>
+          {command}
+        </pre>
+      </section>
+      {!fresh && <p className="-mt-2 text-sm text-muted">Put your key where it says {"<your key>"}. The full key is shown only when it is made; if you no longer have it, make a new one below.</p>}
 
       <Card title="Site key" hint="Identifies your site to the chat service. It lives on your server only, never in the browser.">
         <div className="flex flex-wrap items-center gap-3">
-          <code className="break-all rounded-lg bg-bg px-3 py-2 text-sm">{keyShown}</code>
+          <code className="break-all rounded-[10px] bg-sunken px-3 py-2 font-mono text-[13px]">{keyShown}</code>
           {fresh && <CopyButton text={fresh} />}
           <Button
             variant="danger"

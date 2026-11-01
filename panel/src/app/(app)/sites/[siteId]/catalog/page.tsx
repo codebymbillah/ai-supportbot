@@ -171,7 +171,7 @@ function ProductForm({ product, siteId, onClose }: { product: Product; siteId: s
   const set = <K extends keyof Product>(k: K, v: Product[K]) => setP((x) => ({ ...x, [k]: v }))
   return (
     <form
-      className="mb-6 grid gap-4 rounded-xl border border-line bg-bg p-4 sm:grid-cols-2"
+      className="mb-6 grid gap-4 rounded-xl border border-line bg-sunken p-4 sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault()
         if (!p.title.trim()) return

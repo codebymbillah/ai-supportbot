@@ -29,7 +29,7 @@ export default function KnowledgePage() {
       ) : (
         <ul className="grid gap-3">
           {site.notes.map((n) => (
-            <li key={n.id} className="rounded-xl border border-line bg-surface p-4">
+            <li key={n.id} className="rounded-2xl border border-line bg-surface p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="flex items-center gap-2 font-medium">
@@ -58,7 +58,7 @@ function NoteForm({ note, siteId, onClose }: { note: Note; siteId: string; onClo
   const [n, setN] = useState(note)
   return (
     <form
-      className="grid gap-4 rounded-xl border border-line bg-surface p-5 sm:max-w-2xl"
+      className="grid gap-4 rounded-2xl border border-line bg-surface p-6 sm:max-w-2xl"
       onSubmit={(e) => {
         e.preventDefault()
         if (!n.title.trim() || !n.body.trim()) return

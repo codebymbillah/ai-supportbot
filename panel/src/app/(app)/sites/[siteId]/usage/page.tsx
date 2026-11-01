@@ -22,7 +22,7 @@ export default function UsagePage() {
       <PageTitle title={`Usage, ${u.month}`} hint="What the chat did this month and what it cost." />
       <dl className="grid gap-4 sm:grid-cols-3">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-line bg-surface p-5">
+          <div key={s.label} className="rounded-2xl border border-line bg-surface p-6">
             <dt className="text-sm text-muted">{s.label}</dt>
             <dd className="mt-1 text-2xl font-semibold tabular-nums">{s.value}</dd>
           </div>

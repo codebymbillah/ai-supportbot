@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation"
 import { useState } from "react"
-import { Button, Card, Field, Input, Select, TagList, Textarea, Toggle } from "@/components/ui"
+import { Button, Card, Field, Input, PageTitle, Select, TagList, Textarea, Toggle } from "@/components/ui"
 import { saveSettings, useSite } from "@/lib/store"
 import type { Site, SiteSettings } from "@/lib/types"
 
@@ -25,13 +25,15 @@ function SettingsForm({ site }: { site: Site }) {
 
   return (
     <form
-      className="grid grid-cols-[minmax(0,1fr)] gap-6"
+      className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start"
       onSubmit={(e) => {
         e.preventDefault()
         saveSettings(site.id, s)
         setSaved(true)
       }}
     >
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+      <PageTitle title="Settings" hint="How the chat looks and behaves on your site. Saved changes reach your site within a minute, with no change to its code." />
       <Card title="Chat on or off" hint="While it is off, the chat button does not show on your site.">
         <div className="flex items-center gap-3">
           <Toggle checked={s.enabled} onChange={(v) => set("enabled", v)} label="Chat on" />
@@ -63,7 +65,6 @@ function SettingsForm({ site }: { site: Site }) {
             <p className="text-xs text-muted">Up to 6 buttons under the greeting.</p>
           </div>
         </div>
-        <Preview s={s} name={site.name} />
       </Card>
 
       <Card title="Photos" hint="Visitors can attach photos, for example of a product they want.">
@@ -111,44 +112,70 @@ function SettingsForm({ site }: { site: Site }) {
         </div>
       </Card>
 
-      <div className="sticky bottom-4 flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3">
+      <div className="sticky bottom-4 z-10 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface/95 px-4 py-3 shadow-[0_8px_24px_-12px_rgba(24,32,43,.25)] backdrop-blur">
         <Button variant="primary" type="submit" disabled={!dirty}>
           Save changes
         </Button>
         {dirty && <Button onClick={() => { setS(site.settings); setSaved(false) }}>Discard</Button>}
-        <span role="status" className="text-sm text-muted">
-          {saved && !dirty ? "Saved. It reaches your site within a minute." : dirty ? "You have unsaved changes." : ""}
+        <span role="status" key={saved && !dirty ? "saved" : dirty ? "dirty" : "idle"} className={`rise text-sm ${saved && !dirty ? "text-ok" : "text-muted"}`}>
+          {saved && !dirty ? "Saved. It reaches your site within a minute." : dirty ? "Unsaved changes" : ""}
         </span>
       </div>
+      </div>
+      <aside className="xl:sticky xl:top-10">
+        <Preview s={s} name={site.name} />
+      </aside>
     </form>
   )
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number.isFinite(n) ? n : lo))
 
-/** A small picture of the chat's first screen, so a change is visible before saving. */
+/** The chat's first screen as a visitor sees it, drawn from the unsaved settings so every change shows as it is typed. */
 function Preview({ s, name }: { s: SiteSettings; name: string }) {
+  const title = s.assistantName || name
   return (
-    <div className="mt-6 max-w-sm rounded-xl border border-line bg-bg p-4" aria-label="Preview">
-      <p className="mb-2 text-xs uppercase tracking-wide text-muted">Preview</p>
-      <div className="rounded-xl border border-line bg-surface">
-        <div className="border-b border-line px-4 py-3">
-          <p className="text-sm font-semibold">{s.assistantName || name}</p>
-          {s.tagline && <p className="text-xs text-muted">{s.tagline}</p>}
+    <figure aria-label="Preview of the chat">
+      <figcaption className="mb-3 flex items-center justify-between text-[13px] text-muted">
+        <span>What visitors see</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className={`size-1.5 rounded-full ${s.enabled ? "bg-brand" : "bg-line-strong"}`} />
+          {s.enabled ? "On" : "Off: hidden on your site"}
+        </span>
+      </figcaption>
+      <div className={`overflow-hidden rounded-[22px] border border-line bg-surface shadow-[0_24px_48px_-24px_rgba(24,32,43,.35)] ${s.enabled ? "" : "opacity-60 grayscale"}`}>
+        <div className="flex items-center gap-3 bg-side px-4 py-3.5 text-side-ink">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand text-sm font-semibold text-brand-ink">{title.slice(0, 1).toUpperCase()}</span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{title}</p>
+            <p className="truncate text-xs text-side-muted">{s.tagline || "Usually replies in seconds"}</p>
+          </div>
         </div>
-        <div className="grid gap-3 p-4">
-          <p className="w-fit max-w-[85%] rounded-xl bg-bg px-3 py-2 text-sm">{s.greeting || "…"}</p>
+        <div className="grid min-h-[260px] content-start gap-3 bg-sunken/60 p-4">
+          <p className="w-fit max-w-[88%] whitespace-pre-line rounded-2xl rounded-tl-md bg-surface px-3.5 py-2.5 text-sm leading-6 shadow-[0_1px_0_rgba(24,32,43,.06)]">{s.greeting || "Write a greeting"}</p>
           {s.chips.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {s.chips.map((c) => (
-                <span key={c} className="rounded-full border border-line px-3 py-1 text-xs">
+                <span key={c} className="rounded-full border border-brand/30 bg-surface px-3 py-1.5 text-xs font-medium text-brand">
                   {c}
                 </span>
               ))}
             </div>
           )}
         </div>
+        <div className="flex items-center gap-2 border-t border-line px-3 py-3">
+          {s.photos.enabled && (
+            <span className="grid size-8 place-items-center rounded-full text-muted" aria-hidden>
+              <svg viewBox="0 0 20 20" className="size-4"><rect x="2.5" y="4.5" width="15" height="11" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.4" /><circle cx="7.5" cy="9" r="1.4" fill="currentColor" /><path d="M4 14l4-3.5 3 2.5 2.5-2 3 3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>
+            </span>
+          )}
+          <span className="h-9 flex-1 rounded-full bg-sunken px-4 text-sm leading-9 text-muted">Write a message…</span>
+          <span className="grid size-9 place-items-center rounded-full bg-brand text-brand-ink" aria-hidden>
+            <svg viewBox="0 0 20 20" className="size-4"><path d="M4 10h11M10 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </span>
+        </div>
       </div>
-    </div>
+      <p className="mt-3 text-[13px] leading-5 text-muted">{s.language === "auto" ? "Answers in the visitor's language." : s.language === "bn" ? "Answers in Bangla." : "Answers in English."}{s.photos.enabled ? ` Up to ${s.photos.maxPerMessage} photos a message.` : " Photos off."}</p>
+    </figure>
   )
 }
