@@ -65,7 +65,8 @@ src/
   lib/            cn.ts
 cli/              `npx support-chat init`: sets a project up with one command
 example/          a route, a wrapper, demo scripts and the CSS lines a new project copies
-docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (turning the Laravel chat into a module)
+docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (module and adapter), HOSTED-SERVICE.md (what a client sets),
+                  SERVICE-BUILD-GUIDE.md (the service, the panel and each client's product data)
 tests/            43 tests: safety rules, labels, the server door, the reading of backend answers, the setup command
 ```
 Outside the package only two paths are public: `@techabyte/support-chat` (`src/index.ts`) and `@techabyte/support-chat/server` (`src/server/index.ts`). Everything else can move without breaking a project.
