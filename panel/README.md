@@ -12,10 +12,15 @@ npm run dev        # http://localhost:3100
 ```
 Sign in with any email. "Reset demo" in the top bar puts the sample data back.
 
-## Screens
+## Two dashboards
+- **Client dashboard** (`/sites/...`): what a shop owner uses for their own sites. Every site opens on its **Overview**: chat on/off, this month in four numbers, chats waiting for the team, a setup checklist until it is done, and anything broken.
+- **Super admin** (`/admin`): TechaByte staff only. **Service overview** (clients, live sites, chats, hand-over rate, AI spend, a "needs attention" list across every client, sites by plan) and **Clients** (search, filter by status, change plan, pause or resume a site, open it to help the owner). In the demo anyone can open it from the sidebar; the real service shows it only to TechaByte accounts.
+
+## Client screens
 | Screen | What the client does |
 |---|---|
 | Your sites | See sites, add a site (a key is shown once). |
+| Overview | Chat on/off, chats this month, share answered by the assistant, first reply time, who is waiting, setup checklist, problems. |
 | Install | Copy the one install command, see the key prefix, make a new key, edit allowed domains, rename or delete the site. |
 | Settings | Chat on or off, assistant name, tagline, greeting, quick questions, language, photo rules, words never to say, contact details, price freshness, monthly AI limit, with a live preview. |
 | Products | Where products come from (own website, feed, shop platform), "Read now", the product list with search, hide, edit, add by hand, delete, and an "Old" mark on prices past the freshness limit. |

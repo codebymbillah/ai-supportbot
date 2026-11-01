@@ -29,7 +29,7 @@ export default function UsagePage() {
         ))}
       </dl>
       <Card title="AI spend" hint="The chat stops and shows your contact details when the monthly limit is reached. Change the limit in Settings.">
-        <p className="text-sm tabular-nums">
+        <p className="text-sm">
           ${u.spend.toFixed(2)} of ${settings.monthlyLimit} ({pct}%)
         </p>
         <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Spend against the monthly limit">

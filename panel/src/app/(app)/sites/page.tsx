@@ -51,7 +51,7 @@ export default function SitesPage() {
       {sites.length === 0 ? (
         <Empty title="No sites yet">Add your website to get a key and the install command.</Empty>
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2">
+        <ul className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {sites.map((s) => (
             <li key={s.id}>
               <Link href={`/sites/${s.id}`} className="block rounded-2xl border border-line bg-surface p-6 hover:border-line-strong hover:shadow-[0_12px_32px_-20px_rgba(24,32,43,.35)]">

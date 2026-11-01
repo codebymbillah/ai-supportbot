@@ -83,9 +83,16 @@ export interface Usage {
   month: string
 }
 
+export type Plan = "pilot" | "starter" | "growth"
+export type SiteStatus = "pilot" | "active" | "suspended"
+
 export interface Site {
   id: string
   name: string
+  /** The client company that owns the site (super admin view). */
+  client: string
+  plan: Plan
+  status: SiteStatus
   domains: string[]
   /** Only the first characters are kept to show; the full key is shown once, when it is made. */
   keyPrefix: string

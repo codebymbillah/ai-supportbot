@@ -11,7 +11,8 @@ import type { Site } from "@/lib/types"
 const subscribe = () => () => {}
 
 const SECTIONS = [
-  { href: "", label: "Install" },
+  { href: "", label: "Overview" },
+  { href: "/install", label: "Install" },
   { href: "/settings", label: "Settings" },
   { href: "/catalog", label: "Products" },
   { href: "/knowledge", label: "Knowledge" },
@@ -24,6 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { user, sites } = usePanel()
   const { siteId } = useParams<{ siteId?: string }>()
+  const pathname = usePathname()
   const ready = useSyncExternalStore(subscribe, () => true, () => false)
 
   useEffect(() => {
@@ -32,6 +34,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!ready || !user) return <div className="grid min-h-screen place-items-center text-sm text-muted">Loading…</div>
   const site = sites.find((s) => s.id === siteId)
+  const isAdmin = pathname.startsWith("/admin")
 
   return (
     <div className="lg:pl-64">
@@ -44,16 +47,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Account email={user.email} className="lg:hidden" onSignOut={() => { signOut(); router.push("/login") }} />
         </div>
 
-        <SiteSwitcher sites={sites} current={site} />
+        {isAdmin ? (
+          <p className="mx-3 mb-3 rounded-xl border border-side-line px-3 py-2.5 text-sm">
+            <span className="block font-medium">TechaByte staff</span>
+            <span className="block text-xs text-side-muted">Every client on the service</span>
+          </p>
+        ) : (
+          <SiteSwitcher sites={sites} current={site} />
+        )}
 
-        {site && <SiteNav site={site} />}
+        {site && !isAdmin && <SiteNav site={site} />}
+        {isAdmin && <AdminNav />}
+
+        {/* Demo: anyone can open the staff view. In the real service only TechaByte accounts see this link. */}
+        <div className="border-t border-side-line px-3 py-3">
+          <Link
+            href={isAdmin ? "/sites" : "/admin"}
+            className="flex h-9 items-center gap-2.5 rounded-lg px-3 text-sm text-side-muted hover:bg-side-active/60 hover:text-side-ink"
+          >
+            <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
+              <path d="M8 1.5l5.5 2v4c0 3.2-2.3 5.9-5.5 7-3.2-1.1-5.5-3.8-5.5-7v-4l5.5-2z" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+            </svg>
+            {isAdmin ? "Back to my sites" : "Super admin"}
+          </Link>
+        </div>
 
         <div className="mt-auto hidden border-t border-side-line px-5 py-4 lg:block">
           <Account email={user.email} onSignOut={() => { signOut(); router.push("/login") }} />
         </div>
       </aside>
 
-      <main className="mx-auto max-w-[1080px] px-4 py-8 sm:px-8 lg:py-10">{children}</main>
+      <main className="px-4 py-8 sm:px-8 lg:px-12 lg:py-10">{children}</main>
     </div>
   )
 }
@@ -66,6 +90,26 @@ function Mark() {
       <path d="M7 18l-1 4 5-4" fill="var(--brand)" />
       <path d="M8 10.5l2.5 2.5L16 8" stroke="var(--brand-ink)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+function AdminNav() {
+  const pathname = usePathname()
+  const items = [
+    { href: "/admin", label: "Overview" },
+    { href: "/admin/clients", label: "Clients" },
+  ]
+  return (
+    <nav aria-label="Super admin" className="flex gap-1 overflow-x-auto border-t border-side-line px-3 py-3 lg:flex-col lg:overflow-visible">
+      {items.map((s) => {
+        const active = pathname === s.href
+        return (
+          <Link key={s.href} href={s.href} aria-current={active ? "page" : undefined} className={`flex h-9 shrink-0 items-center rounded-lg px-3 text-sm ${active ? "bg-side-active font-medium text-side-ink" : "text-side-muted hover:bg-side-active/60 hover:text-side-ink"}`}>
+            {s.label}
+          </Link>
+        )
+      })}
+    </nav>
   )
 }
 

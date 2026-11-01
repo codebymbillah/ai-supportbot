@@ -8,8 +8,9 @@ export const metadata: Metadata = { title: "Support Chat Panel", description: "R
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={ui.variable}>
-      <body className="min-h-screen">{children}</body>
+    // Browser extensions add attributes to these two tags before React loads; that is not a bug in the page.
+    <html lang="en" className={ui.variable} suppressHydrationWarning>
+      <body className="min-h-screen" suppressHydrationWarning>{children}</body>
     </html>
   )
 }

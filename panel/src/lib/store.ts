@@ -5,9 +5,9 @@
 // replace the bodies with fetch calls and keep the names, and the screens do not change.
 import { useSyncExternalStore } from "react"
 import { seed } from "./seed"
-import type { Chat, ChatStatus, Member, Note, PanelState, Product, Site, SiteSettings, Source, SourceKind } from "./types"
+import type { Chat, ChatStatus, Member, Note, PanelState, Plan, Product, Site, SiteSettings, SiteStatus, Source, SourceKind } from "./types"
 
-const KEY = "support-chat-panel-demo-v1"
+const KEY = "support-chat-panel-demo-v2"
 const listeners = new Set<() => void>()
 const SERVER = seed()
 let cache: PanelState | null = null
@@ -76,6 +76,9 @@ export function createSite(name: string, domain: string): { site: Site; key: str
   const site: Site = {
     id: uid("site"),
     name,
+    client: name,
+    plan: "pilot",
+    status: "pilot",
     domains: [domain],
     keyPrefix: key.slice(0, 12),
     createdAt: nowIso(),
@@ -104,6 +107,15 @@ export function renameSite(siteId: string, name: string) {
 export function setDomains(siteId: string, domains: string[]) {
   edit(siteId, (s) => ({ ...s, domains }))
 }
+// ---- super admin (TechaByte staff only in the real service)
+export function setSiteStatus(siteId: string, status: SiteStatus) {
+  edit(siteId, (s) => ({ ...s, status, settings: status === "suspended" ? { ...s.settings, enabled: false } : s.settings }))
+}
+export function setPlan(siteId: string, plan: Plan) {
+  const limits: Record<Plan, number> = { pilot: 20, starter: 50, growth: 200 }
+  edit(siteId, (s) => ({ ...s, plan, settings: { ...s.settings, monthlyLimit: limits[plan] } }))
+}
+
 export function saveSettings(siteId: string, settings: SiteSettings) {
   edit(siteId, (s) => ({ ...s, settings }))
 }
