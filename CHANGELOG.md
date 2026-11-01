@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.2 (1 Nov 2026)
+- A message that did not send now says why under the conversation (for example "Can't reach ... right now"), and the typing dots no longer keep running after it failed.
+
 ## 0.4.1 (1 Nov 2026)
 - `init --layout` now places the chat in the layout that create-next-app makes today (`<body ...>{children}</body>` on one line), keeping the file's semicolons. Before, it stopped with "to do".
 - Run one folder too high (create-next-app often makes `my-app/my-app`), `init` names the folder to `cd` into. 47 tests.

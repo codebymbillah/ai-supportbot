@@ -240,7 +240,8 @@ function SupportChatInner({ config, context, fallbackContact }: { config: Suppor
 
             {state.handoff && <HandoffPanel kind={state.handoff.status} contact={state.handoff.status === "contact" ? state.handoff.contact : undefined} onCallBack={chat.callBack} />}
 
-            {chat.error && !off && chat.error.status !== 0 && (
+            {/* A failed poll (status 0) stays quiet and retries by itself; a message that did not send always says why. */}
+            {chat.error && !off && (chat.error.status !== 0 || chat.messages.some((m) => m.local === "failed")) && (
               <p role="alert" className="mx-auto max-w-[92%] rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
                 {chat.error.message}
               </p>

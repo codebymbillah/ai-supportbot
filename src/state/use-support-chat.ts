@@ -62,7 +62,7 @@ export function useSupportChat(config: SupportChatConfig, context: ChatContext, 
   }, [merge, transport])
 
   // The loop. One timer at a time; it reschedules itself with the delay that fits the state.
-  const awaiting = state.awaitingReply || state.handoff?.status === "waiting" || messages.some((m) => m.local === "sending") || messages[messages.length - 1]?.sender === "customer"
+  const awaiting = state.awaitingReply || state.handoff?.status === "waiting" || messages.some((m) => m.local === "sending") || (messages[messages.length - 1]?.sender === "customer" && messages[messages.length - 1]?.local !== "failed")
   useEffect(() => {
     if (!open) return
     let timer: ReturnType<typeof setTimeout> | undefined

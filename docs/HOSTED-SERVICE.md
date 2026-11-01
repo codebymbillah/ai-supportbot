@@ -6,7 +6,7 @@ The goal: a client installs the chat with one command, never touches an API, and
 1. Gets a **site key** from the chat dashboard (we create the site there and send the key).
 2. Runs one command in their Next.js project:
    ```
-   npx github:TechaByte-Solutions/support-chat-kit#v0.4.1 init --key sk_live_xxx --brand "Their Shop" --layout
+   npx github:TechaByte-Solutions/support-chat-kit#v0.4.2 init --key sk_live_xxx --brand "Their Shop" --layout
    ```
    (Once the service has a fixed address it becomes the default and `--api-url` is not needed.)
 3. Opens the dashboard to switch the chat on, and sets name, greeting, colours, language and photo rules there. No code change and no redeploy for these.
