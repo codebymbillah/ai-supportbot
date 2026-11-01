@@ -34,28 +34,41 @@ export default function CatalogPage() {
 }
 
 function Sources({ site }: { site: Site }) {
+  const empty = site.sources.length === 0
+  const [adding, setAdding] = useState(false)
   const [kind, setKind] = useState<SourceKind>("site")
   const [address, setAddress] = useState("")
+  const showForm = adding || empty
+
   return (
-    <Card title="Where your products come from" hint="We read these again every day, and whenever you press Read now.">
-      {site.sources.length === 0 ? (
-        <Empty title="No source yet">Add your website and the assistant learns your products.</Empty>
-      ) : (
+    <Card
+      title="Where your products come from"
+      hint="We read these again every day, and whenever you press Read now."
+      action={
+        !empty && !adding ? (
+          <Button onClick={() => setAdding(true)}>
+            <PlusIcon className="size-4" aria-hidden />
+            Add a source
+          </Button>
+        ) : undefined
+      }
+    >
+      {!empty && (
         <ul className="divide-y divide-line">
           {site.sources.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0">
+            <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
               <div className="flex min-w-0 items-center gap-3">
                 <SourceIcon kind={s.kind} />
                 <div className="min-w-0">
-                <p className="truncate font-medium">{s.address}</p>
-                <p className="text-sm text-muted">
-                  {KINDS[s.kind].label}, last read {fmtDate(s.lastRead)}, {s.products} products
-                </p>
-                {s.status === "error" && <p className="text-sm text-bad">{s.note}</p>}
+                  <p className="truncate font-medium">{s.address}</p>
+                  <p className="text-sm text-muted">
+                    {KINDS[s.kind].label}, last read {fmtDate(s.lastRead)}, {s.products} products
+                  </p>
+                  {s.status === "error" && <p className="text-sm text-bad">{s.note}</p>}
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge tone={s.status === "ok" ? "ok" : s.status === "error" ? "bad" : "plain"}>{s.status === "ok" ? "Working" : s.status === "error" ? "Problem" : "Not read yet"}</Badge>
+                <Badge dot tone={s.status === "ok" ? "ok" : s.status === "error" ? "bad" : "plain"}>{s.status === "ok" ? "Working" : s.status === "error" ? "Problem" : "Not read yet"}</Badge>
                 <Button small onClick={() => { readSource(site.id, s.id); toast("Products read again") }}>
                   <RefreshCwIcon className="size-3.5" aria-hidden />
                   Read now
@@ -68,34 +81,56 @@ function Sources({ site }: { site: Site }) {
           ))}
         </ul>
       )}
-      <form
-        className="mt-5 grid gap-3 border-t border-line pt-5 sm:grid-cols-[180px_1fr_auto] sm:items-end"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!address.trim()) return
-          addSource(site.id, kind, address.trim())
-          setAddress("")
-          toast("Source added. Press Read now to fetch its products.")
-        }}
-      >
-        <Field label="Kind">
-          {(id) => (
-            <Select id={id} value={kind} onChange={(e) => setKind(e.target.value as SourceKind)}>
-              {Object.entries(KINDS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-        <Field label="Address" hint={KINDS[kind].hint}>
-          {(id) => <Input id={id} value={address} onChange={(e) => setAddress(e.target.value)} placeholder={KINDS[kind].placeholder} />}
-        </Field>
-        <Button variant="primary" type="submit" disabled={!address.trim()}>
-          Add source
-        </Button>
-      </form>
+
+      {showForm && (
+        <form
+          className={`grid gap-4 ${empty ? "" : "mt-5 border-t border-line pt-5"}`}
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!address.trim()) return
+            addSource(site.id, kind, address.trim())
+            setAddress("")
+            setAdding(false)
+            toast("Source added. Press Read now to fetch its products.")
+          }}
+        >
+          <fieldset>
+            <legend className="mb-2 text-[13px] font-medium">What do you want to connect?</legend>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {(Object.keys(KINDS) as SourceKind[]).map((k) => {
+                const Icon = KIND_ICON[k]
+                const on = kind === k
+                return (
+                  <label key={k} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 ${on ? "border-brand bg-brand-soft/50 shadow-[0_0_0_1px_var(--brand)]" : "border-line hover:border-line-strong"}`}>
+                    <input type="radio" name="source-kind" value={k} checked={on} onChange={() => setKind(k)} className="sr-only" />
+                    <Icon className={`mt-0.5 size-4.5 shrink-0 ${on ? "text-brand" : "text-muted"}`} aria-hidden />
+                    <span>
+                      <span className="block text-sm font-medium">{KINDS[k].label}</span>
+                      <span className="mt-0.5 block text-[13px] leading-5 text-muted">{KINDS[k].hint}</span>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          </fieldset>
+          <div className="grid gap-1.5">
+            <label htmlFor="source-address" className="text-[13px] font-medium">
+              {kind === "site" ? "Your website's address" : kind === "feed" ? "The feed's address" : "Your shop's address"}
+            </label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input id="source-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={KINDS[kind].placeholder} />
+              <Button variant="primary" type="submit" disabled={!address.trim()}>
+                Add source
+              </Button>
+              {!empty && (
+                <Button onClick={() => { setAdding(false); setAddress("") }}>
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </div>
+        </form>
+      )}
     </Card>
   )
 }
