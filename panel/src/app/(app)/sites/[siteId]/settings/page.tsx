@@ -1,5 +1,6 @@
 "use client"
 
+import { toast } from "@/components/toast"
 import { useParams } from "next/navigation"
 import { useState } from "react"
 import { Button, Card, Field, Input, PageTitle, Select, TagList, Textarea, Toggle } from "@/components/ui"
@@ -29,6 +30,7 @@ function SettingsForm({ site }: { site: Site }) {
       onSubmit={(e) => {
         e.preventDefault()
         saveSettings(site.id, s)
+        toast("Settings saved")
         setSaved(true)
       }}
     >

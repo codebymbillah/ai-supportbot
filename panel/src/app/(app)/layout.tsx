@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import { useEffect, useSyncExternalStore } from "react"
+import { ArrowLeftIcon, BarChart3Icon, BookOpenIcon, InboxIcon, LayoutDashboardIcon, type LucideIcon, PackageIcon, ShieldCheckIcon, SlidersHorizontalIcon, TerminalSquareIcon, UsersIcon } from "lucide-react"
+import { Toaster } from "@/components/toast"
 import { resetDemo, signOut, usePanel } from "@/lib/store"
 import type { Site } from "@/lib/types"
 
@@ -10,15 +12,16 @@ import type { Site } from "@/lib/types"
 // Until the browser has read the saved demo data nothing is decided, so a signed-in visitor is not sent to the login page by mistake.
 const subscribe = () => () => {}
 
-const SECTIONS = [
-  { href: "", label: "Overview" },
-  { href: "/install", label: "Install" },
-  { href: "/settings", label: "Settings" },
-  { href: "/catalog", label: "Products" },
-  { href: "/knowledge", label: "Knowledge" },
-  { href: "/inbox", label: "Inbox" },
-  { href: "/team", label: "Team" },
-  { href: "/usage", label: "Usage" },
+// Ordered by how often a shop owner opens them: the inbox daily, install once.
+const SECTIONS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "", label: "Overview", icon: LayoutDashboardIcon },
+  { href: "/inbox", label: "Inbox", icon: InboxIcon },
+  { href: "/catalog", label: "Products", icon: PackageIcon },
+  { href: "/knowledge", label: "Knowledge", icon: BookOpenIcon },
+  { href: "/settings", label: "Settings", icon: SlidersHorizontalIcon },
+  { href: "/team", label: "Team", icon: UsersIcon },
+  { href: "/usage", label: "Usage", icon: BarChart3Icon },
+  { href: "/install", label: "Install", icon: TerminalSquareIcon },
 ]
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -42,7 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between gap-3 px-5 py-4 lg:py-5">
           <Link href="/sites" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Mark />
-            Support Chat
+            Dotbyte Chat
           </Link>
           <Account email={user.email} className="lg:hidden" onSignOut={() => { signOut(); router.push("/login") }} />
         </div>
@@ -65,9 +68,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             href={isAdmin ? "/sites" : "/admin"}
             className="flex h-9 items-center gap-2.5 rounded-lg px-3 text-sm text-side-muted hover:bg-side-active/60 hover:text-side-ink"
           >
-            <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
-              <path d="M8 1.5l5.5 2v4c0 3.2-2.3 5.9-5.5 7-3.2-1.1-5.5-3.8-5.5-7v-4l5.5-2z" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-            </svg>
+            {isAdmin ? <ArrowLeftIcon className="size-4" aria-hidden /> : <ShieldCheckIcon className="size-4" aria-hidden />}
             {isAdmin ? "Back to my sites" : "Super admin"}
           </Link>
         </div>
@@ -78,6 +79,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main className="px-4 py-8 sm:px-8 lg:px-12 lg:py-10">{children}</main>
+      <Toaster />
     </div>
   )
 }
@@ -96,15 +98,17 @@ function Mark() {
 function AdminNav() {
   const pathname = usePathname()
   const items = [
-    { href: "/admin", label: "Overview" },
-    { href: "/admin/clients", label: "Clients" },
+    { href: "/admin", label: "Overview", icon: LayoutDashboardIcon },
+    { href: "/admin/clients", label: "Clients", icon: UsersIcon },
   ]
   return (
     <nav aria-label="Super admin" className="flex gap-1 overflow-x-auto border-t border-side-line px-3 py-3 lg:flex-col lg:overflow-visible">
       {items.map((s) => {
         const active = pathname === s.href
         return (
-          <Link key={s.href} href={s.href} aria-current={active ? "page" : undefined} className={`flex h-9 shrink-0 items-center rounded-lg px-3 text-sm ${active ? "bg-side-active font-medium text-side-ink" : "text-side-muted hover:bg-side-active/60 hover:text-side-ink"}`}>
+          <Link key={s.href} href={s.href} aria-current={active ? "page" : undefined} className={`relative flex h-9 shrink-0 items-center gap-3 rounded-lg px-3 text-sm ${active ? "bg-side-active font-medium text-side-ink" : "text-side-muted hover:bg-side-active/60 hover:text-side-ink"}`}>
+            {active && <span aria-hidden className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-brand" />}
+            <s.icon className={`size-4 shrink-0 ${active ? "text-brand" : ""}`} aria-hidden />
             {s.label}
           </Link>
         )
@@ -162,9 +166,12 @@ function SiteNav({ site }: { site: Site }) {
             key={s.label}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`flex h-9 shrink-0 items-center justify-between gap-3 rounded-lg px-3 text-sm ${active ? "bg-side-active font-medium text-side-ink" : "text-side-muted hover:bg-side-active/60 hover:text-side-ink"}`}
+            className={`relative flex h-9 shrink-0 items-center gap-3 rounded-lg px-3 text-sm ${active ? "bg-side-active font-medium text-side-ink" : "text-side-muted hover:bg-side-active/60 hover:text-side-ink"}`}
           >
-            {s.label}
+            {/* The active page also gets a jade bar on the left, so it stands out without relying on the shade alone. */}
+            {active && <span aria-hidden className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-brand" />}
+            <s.icon className={`size-4 shrink-0 ${active ? "text-brand" : ""}`} aria-hidden />
+            <span className="flex-1">{s.label}</span>
             {s.label === "Inbox" && waiting > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1.5 text-[11px] font-semibold text-brand-ink tabular-nums">{waiting}</span>}
           </Link>
         )

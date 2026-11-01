@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter, useParams } from "next/navigation"
+import { toast } from "@/components/toast"
 import { useState } from "react"
 import { Button, Card, CopyButton, Field, Input, PageTitle, TagList } from "@/components/ui"
 import { deleteSite, renameSite, rotateKey, setDomains, useSite } from "@/lib/store"
@@ -44,7 +45,7 @@ export default function InstallPage() {
           <Button
             variant="danger"
             onClick={() => {
-              if (window.confirm("Make a new key? The old key stops working at once, so update SUPPORT_CHAT_KEY on your site.")) setFresh(rotateKey(site.id))
+              if (window.confirm("Make a new key? The old key stops working at once, so update SUPPORT_CHAT_KEY on your site.")) { setFresh(rotateKey(site.id)); toast("New key made. Copy it now.") }
             }}
           >
             Make a new key
@@ -54,7 +55,15 @@ export default function InstallPage() {
       </Card>
 
       <Card title="Allowed domains" hint="The chat answers only on these domains. A key used anywhere else is refused.">
-        <TagList label="Add a domain" placeholder="myshop.com" values={site.domains} onChange={(v) => setDomains(site.id, v.map((d) => d.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "")))} />
+        <TagList
+          label="Add a domain"
+          placeholder="myshop.com"
+          values={site.domains}
+          onChange={(v) => {
+            setDomains(site.id, v.map((d) => d.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "")))
+            toast(v.length > site.domains.length ? "Domain added" : "Domain removed")
+          }}
+        />
       </Card>
 
       <Card title="Check it works">
@@ -71,7 +80,7 @@ export default function InstallPage() {
             {(id) => (
               <div className="flex gap-2">
                 <Input id={id} value={name ?? site.name} onChange={(e) => setName(e.target.value)} />
-                <Button disabled={!name?.trim() || name === site.name} onClick={() => { renameSite(site.id, name!.trim()); setName(null) }}>
+                <Button disabled={!name?.trim() || name === site.name} onClick={() => { renameSite(site.id, name!.trim()); toast("Site renamed"); setName(null) }}>
                   Rename
                 </Button>
               </div>

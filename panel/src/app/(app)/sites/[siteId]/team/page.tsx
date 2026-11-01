@@ -2,7 +2,9 @@
 
 import { useParams } from "next/navigation"
 import { useState } from "react"
-import { Badge, Button, Card, Field, Input, PageTitle, Select } from "@/components/ui"
+import { UserMinusIcon } from "lucide-react"
+import { toast } from "@/components/toast"
+import { Badge, Button, Card, Field, IconButton, Initials, Input, PageTitle, Select } from "@/components/ui"
 import { inviteMember, removeMember, useSite } from "@/lib/store"
 import type { Member } from "@/lib/types"
 
@@ -21,16 +23,32 @@ export default function TeamPage() {
       <Card>
         <ul className="divide-y divide-line">
           {site.team.map((m) => (
-            <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-              <div className="min-w-0">
-                <p className="truncate font-medium">{m.email}</p>
-                <p className="text-sm text-muted">{m.invited ? "Invitation sent" : "Active"}</p>
+            <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-3.5 first:pt-0 last:pb-0">
+              <div className="flex min-w-0 items-center gap-3">
+                <Initials email={m.email} />
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{m.email}</p>
+                  <p className="text-[13px] text-muted">{m.role === "owner" ? "Owner: answers chats, changes settings, manages the team" : "Agent: answers chats"}</p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge tone={m.role === "owner" ? "ok" : "plain"}>{m.role === "owner" ? "Owner" : "Agent"}</Badge>
-                <Button small variant="danger" disabled={m.role === "owner" && owners === 1} title={m.role === "owner" && owners === 1 ? "A site needs at least one owner" : undefined} onClick={() => window.confirm(`Remove ${m.email}?`) && removeMember(site.id, m.id)}>
-                  Remove
-                </Button>
+                {m.invited ? <Badge tone="warn">Invitation sent</Badge> : <Badge dot tone="ok">Active</Badge>}
+                {m.role === "owner" && owners === 1 ? (
+                  <span className="w-8" aria-hidden />
+                ) : (
+                  <IconButton
+                    label={`Remove ${m.email}`}
+                    tone="danger"
+                    onClick={() => {
+                      if (window.confirm(`Remove ${m.email}? They can no longer open this site's inbox.`)) {
+                        removeMember(site.id, m.id)
+                        toast(`${m.email} removed`)
+                      }
+                    }}
+                  >
+                    <UserMinusIcon />
+                  </IconButton>
+                )}
               </div>
             </li>
           ))}
@@ -46,6 +64,7 @@ export default function TeamPage() {
             if (site.team.some((m) => m.email === v)) return setError("That person is already on the team.")
             setError(undefined)
             inviteMember(site.id, v, role)
+            toast(`Invitation sent to ${v}`)
             setEmail("")
           }}
         >

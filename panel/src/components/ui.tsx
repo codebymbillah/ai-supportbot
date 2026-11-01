@@ -1,6 +1,7 @@
 "use client"
 
 import { useId, useState } from "react"
+import { toast } from "./toast"
 
 /** A panel of related controls. The heading sits inside, without a band, so a page reads as one surface rather than a stack of boxes. */
 export function Card({ title, hint, action, children, tight }: { title?: string; hint?: string; action?: React.ReactNode; children: React.ReactNode; tight?: boolean }) {
@@ -22,7 +23,7 @@ export function Card({ title, hint, action, children, tight }: { title?: string;
 
 export function PageTitle({ title, hint, action }: { title: string; hint?: string; action?: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">{title}</h1>
         {hint && <p className="mt-2 max-w-[62ch] text-[15px] leading-6 text-muted">{hint}</p>}
@@ -46,6 +47,32 @@ export function Button({ variant = "outline", small, className = "", ...props }:
       {...props}
       className={`inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-medium active:translate-y-px disabled:pointer-events-none disabled:opacity-45 ${small ? "h-8 px-3 text-[13px]" : "h-10 px-4 text-sm"} ${VARIANTS[variant]} ${className}`}
     />
+  )
+}
+
+/** A small square button with only an icon. `label` is read aloud and shown on hover. */
+export function IconButton({ label, tone = "plain", className = "", children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { label: string; tone?: "plain" | "danger" }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      {...props}
+      className={`grid size-8 shrink-0 place-items-center rounded-lg text-muted disabled:pointer-events-none disabled:opacity-40 [&>svg]:size-4 ${tone === "danger" ? "hover:bg-bad-soft hover:text-bad" : "hover:bg-sunken hover:text-ink"} ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
+
+/** A round mark with a person's first letter, coloured from their email so the same person always looks the same. */
+export function Initials({ email, size = "md" }: { email: string; size?: "sm" | "md" }) {
+  const hues = ["#0b7a63", "#2f5bd3", "#9a4fd1", "#c2410c", "#0e7490", "#a16207"]
+  const hue = hues[[...email].reduce((n, c) => n + c.charCodeAt(0), 0) % hues.length]
+  return (
+    <span aria-hidden className={`grid shrink-0 place-items-center rounded-full font-semibold uppercase text-white ${size === "sm" ? "size-7 text-xs" : "size-9 text-sm"}`} style={{ background: hue }}>
+      {email[0]}
+    </span>
   )
 }
 
@@ -157,8 +184,9 @@ export function CopyButton({ text, label = "Copy" }: { text: string; label?: str
           await navigator.clipboard.writeText(text)
           setDone(true)
           setTimeout(() => setDone(false), 1600)
+          toast("Copied")
         } catch {
-          /* the text is on screen to select by hand */
+          toast("Copy did not work here. Select the text and copy it.", "bad")
         }
       }}
     >

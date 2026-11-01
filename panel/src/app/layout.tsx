@@ -4,7 +4,7 @@ import "./globals.css"
 
 const ui = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-ui", display: "swap" })
 
-export const metadata: Metadata = { title: "Support Chat Panel", description: "Run the support chat on your site." }
+export const metadata: Metadata = { title: "Dotbyte Chat", description: "Run the chat on your site." }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

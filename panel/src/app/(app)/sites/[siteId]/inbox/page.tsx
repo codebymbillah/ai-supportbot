@@ -1,5 +1,6 @@
 "use client"
 
+import { toast } from "@/components/toast"
 import { useParams } from "next/navigation"
 import { useState } from "react"
 import { Badge, Button, Empty, Input, PageTitle, fmtDate } from "@/components/ui"
@@ -92,17 +93,17 @@ function Conversation({ chat, siteId, onGone }: { chat: Chat; siteId: string; on
         </div>
         <div className="flex gap-2">
           {chat.status === "open" && (
-            <Button small onClick={() => setChatStatus(siteId, chat.id, "agent")}>
+            <Button small onClick={() => { setChatStatus(siteId, chat.id, "agent"); toast("You have taken over this chat") }}>
               Take over
             </Button>
           )}
           {chat.status === "agent" && (
-            <Button small onClick={() => setChatStatus(siteId, chat.id, "open")}>
+            <Button small onClick={() => { setChatStatus(siteId, chat.id, "open"); toast("The assistant answers this chat again") }}>
               Hand back to the assistant
             </Button>
           )}
           {chat.status !== "closed" && (
-            <Button small onClick={() => setChatStatus(siteId, chat.id, "closed")}>
+            <Button small onClick={() => { setChatStatus(siteId, chat.id, "closed"); toast("Chat closed") }}>
               Close
             </Button>
           )}
@@ -112,6 +113,7 @@ function Conversation({ chat, siteId, onGone }: { chat: Chat; siteId: string; on
             onClick={() => {
               if (window.confirm("Delete this chat for good?")) {
                 deleteChat(siteId, chat.id)
+                toast("Chat deleted")
                 onGone()
               }
             }}

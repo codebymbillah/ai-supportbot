@@ -19,7 +19,7 @@ export default function LoginPage() {
             <path d="M7 18l-1 4 5-4" fill="var(--brand)" />
             <path d="M8 10.5l2.5 2.5L16 8" stroke="var(--brand-ink)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Support Chat
+          Dotbyte Chat
         </p>
         {/* A real-looking exchange says what the product does better than a slogan. */}
         <div className="grid max-w-md gap-3" aria-hidden>

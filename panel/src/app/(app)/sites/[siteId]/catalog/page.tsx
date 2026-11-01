@@ -2,7 +2,9 @@
 
 import { useParams } from "next/navigation"
 import { useState, useSyncExternalStore } from "react"
-import { Badge, Button, Card, Empty, Field, Input, PageTitle, Select, Textarea, fmtDate } from "@/components/ui"
+import { EyeIcon, EyeOffIcon, GlobeIcon, PencilIcon, PlusIcon, RefreshCwIcon, RssIcon, SearchIcon, StoreIcon, Trash2Icon } from "lucide-react"
+import { toast } from "@/components/toast"
+import { Badge, Button, Card, Empty, Field, IconButton, Input, PageTitle, Select, Textarea, fmtDate } from "@/components/ui"
 import { addSource, deleteProduct, newProduct, readSource, removeSource, saveProduct, useSite } from "@/lib/store"
 import type { Product, Site, SourceKind } from "@/lib/types"
 
@@ -11,7 +13,8 @@ const KINDS: Record<SourceKind, { label: string; placeholder: string; hint: stri
   feed: { label: "Product feed", placeholder: "https://myshop.com/feed.csv", hint: "A CSV or JSON address (the Google Merchant feed format works)." },
   connector: { label: "Shop platform", placeholder: "WooCommerce or Shopify address", hint: "Connects to your shop platform's own API." },
 }
-const STOCK = { in_stock: "In stock", out_of_stock: "Out of stock", on_request: "On request" } as const
+const STOCK = { in_stock: { label: "In stock", tone: "ok" }, out_of_stock: { label: "Out of stock", tone: "bad" }, on_request: { label: "On request", tone: "plain" } } as const
+const KIND_ICON = { site: GlobeIcon, feed: RssIcon, connector: StoreIcon }
 
 // Whole minutes since 1970, read in the browser only, so the server and the first browser paint agree.
 const subscribe = () => () => {}
@@ -41,20 +44,25 @@ function Sources({ site }: { site: Site }) {
         <ul className="divide-y divide-line">
           {site.sources.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0">
-              <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-3">
+                <SourceIcon kind={s.kind} />
+                <div className="min-w-0">
                 <p className="truncate font-medium">{s.address}</p>
                 <p className="text-sm text-muted">
-                  {KINDS[s.kind].label} · last read {fmtDate(s.lastRead)} · {s.products} products
+                  {KINDS[s.kind].label}, last read {fmtDate(s.lastRead)}, {s.products} products
                 </p>
+                {s.status === "error" && <p className="text-sm text-bad">{s.note}</p>}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Badge tone={s.status === "ok" ? "ok" : s.status === "error" ? "bad" : "plain"}>{s.status === "ok" ? "Working" : s.status === "error" ? "Problem" : "Not read yet"}</Badge>
-                <Button small onClick={() => readSource(site.id, s.id)}>
+                <Button small onClick={() => { readSource(site.id, s.id); toast("Products read again") }}>
+                  <RefreshCwIcon className="size-3.5" aria-hidden />
                   Read now
                 </Button>
-                <Button small variant="danger" onClick={() => window.confirm("Stop reading this source? Its products stay until you delete them.") && removeSource(site.id, s.id)}>
-                  Remove
-                </Button>
+                <IconButton label="Remove source" tone="danger" onClick={() => { if (window.confirm("Stop reading this source? Its products stay until you delete them.")) { removeSource(site.id, s.id); toast("Source removed") } }}>
+                  <Trash2Icon />
+                </IconButton>
               </div>
             </li>
           ))}
@@ -67,6 +75,7 @@ function Sources({ site }: { site: Site }) {
           if (!address.trim()) return
           addSource(site.id, kind, address.trim())
           setAddress("")
+          toast("Source added. Press Read now to fetch its products.")
         }}
       >
         <Field label="Kind">
@@ -101,9 +110,11 @@ function Products({ site }: { site: Site }) {
   return (
     <Card
       title={`Product list (${site.products.length})`}
+      hint="Hidden products stay in the list, but the assistant does not offer them."
       action={
-        <Button variant="primary" onClick={() => setEditing(newProduct())}>
-          Add a product by hand
+        <Button onClick={() => setEditing(newProduct())}>
+          <PlusIcon className="size-4" aria-hidden />
+          Add by hand
         </Button>
       }
     >
@@ -112,45 +123,58 @@ function Products({ site }: { site: Site }) {
         <Empty title="No products yet">Press Read now on a source above, or add one by hand.</Empty>
       ) : (
         <>
-          <div className="mb-4 sm:max-w-xs">
-            <Input aria-label="Search products" placeholder="Search products" value={q} onChange={(e) => setQ(e.target.value)} />
+          <div className="relative mb-4 sm:max-w-xs">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
+            <Input aria-label="Search products" placeholder="Search by name or category" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
           </div>
-          <div className="overflow-x-auto">
+          {/* relative: the hidden "Actions" header is positioned, and must stay inside this scroll box on a phone. */}
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="text-muted">
-                <tr>
-                  <th className="pb-2 font-medium">Product</th>
-                  <th className="pb-2 font-medium">Price</th>
-                  <th className="pb-2 font-medium">Stock</th>
-                  <th className="pb-2 font-medium">Read</th>
-                  <th className="pb-2" />
+              <thead className="text-[13px] text-muted">
+                <tr className="border-b border-line">
+                  <th className="pb-2.5 font-medium">Product</th>
+                  <th className="pb-2.5 text-right font-medium">Price</th>
+                  <th className="pb-2.5 pl-6 font-medium">Stock</th>
+                  <th className="pb-2.5 font-medium">Last read</th>
+                  <th className="pb-2.5"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {list.map((p) => {
                   const old = minute > 0 && minute * 60000 - Date.parse(p.fetchedAt) > staleMs
                   return (
-                    <tr key={p.id} className={p.hidden ? "opacity-60" : undefined}>
-                      <td className="py-3 pr-3">
-                        <p className="font-medium">{p.title}</p>
-                        <p className="text-xs text-muted">{p.category || "No category"}</p>
+                    <tr key={p.id}>
+                      <td className="py-3 pr-4">
+                        <div className={`flex items-center gap-3 ${p.hidden ? "opacity-50" : ""}`}>
+                          <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl bg-sunken text-sm font-semibold text-muted">{p.title.slice(0, 1)}</span>
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{p.title}</p>
+                            <p className="text-[13px] text-muted">{p.category || "No category"}</p>
+                          </div>
+                        </div>
                       </td>
-                      <td className="py-3 pr-3 tabular-nums">{p.price === null ? "On request" : `${p.price.toLocaleString("en-US")} ${p.currency}`}</td>
-                      <td className="py-3 pr-3">{STOCK[p.stock]}</td>
-                      <td className="py-3 pr-3">
-                        <span className="text-muted">{fmtDate(p.fetchedAt)}</span> {old && <Badge tone="warn">Old</Badge>} {p.hidden && <Badge>Hidden</Badge>}
+                      <td className={`whitespace-nowrap py-3 text-right font-medium ${p.hidden ? "opacity-50" : ""}`}>{p.price === null ? <span className="font-normal text-muted">On request</span> : `${p.price.toLocaleString("en-US")} ${p.currency}`}</td>
+                      <td className="py-3 pl-6 pr-3">
+                        <Badge dot tone={STOCK[p.stock].tone}>{STOCK[p.stock].label}</Badge>
                       </td>
-                      <td className="py-3 text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button small variant="ghost" onClick={() => saveProduct(site.id, { ...p, hidden: !p.hidden })}>
-                            {p.hidden ? "Show" : "Hide"}
-                          </Button>
-                          <Button small variant="ghost" onClick={() => setEditing(p)}>
-                            Edit
-                          </Button>
-                          <Button small variant="ghost" className="hover:text-bad" onClick={() => window.confirm(`Delete ${p.title}?`) && deleteProduct(site.id, p.id)}>
-                            Delete
-                          </Button>
+                      <td className="py-3 pr-3">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-muted">{fmtDate(p.fetchedAt)}</span>
+                          {old && <Badge tone="warn">Price may be old</Badge>}
+                          {p.hidden && <Badge>Hidden</Badge>}
+                        </div>
+                      </td>
+                      <td className="py-3">
+                        <div className="flex justify-end gap-0.5">
+                          <IconButton label={p.hidden ? `Show ${p.title}` : `Hide ${p.title}`} onClick={() => { saveProduct(site.id, { ...p, hidden: !p.hidden }); toast(p.hidden ? "Product shown to the assistant" : "Product hidden from the assistant") }}>
+                            {p.hidden ? <EyeIcon /> : <EyeOffIcon />}
+                          </IconButton>
+                          <IconButton label={`Edit ${p.title}`} onClick={() => setEditing(p)}>
+                            <PencilIcon />
+                          </IconButton>
+                          <IconButton label={`Delete ${p.title}`} tone="danger" onClick={() => { if (window.confirm(`Delete ${p.title}?`)) { deleteProduct(site.id, p.id); toast("Product deleted") } }}>
+                            <Trash2Icon />
+                          </IconButton>
                         </div>
                       </td>
                     </tr>
@@ -176,6 +200,7 @@ function ProductForm({ product, siteId, onClose }: { product: Product; siteId: s
         e.preventDefault()
         if (!p.title.trim()) return
         saveProduct(siteId, { ...p, title: p.title.trim(), fetchedAt: new Date().toISOString() })
+        toast("Product saved")
         onClose()
       }}
     >
@@ -190,7 +215,7 @@ function ProductForm({ product, siteId, onClose }: { product: Product; siteId: s
           <Select id={id} value={p.stock} onChange={(e) => set("stock", e.target.value as Product["stock"])}>
             {Object.entries(STOCK).map(([k, v]) => (
               <option key={k} value={k}>
-                {v}
+                {v.label}
               </option>
             ))}
           </Select>
@@ -209,5 +234,14 @@ function ProductForm({ product, siteId, onClose }: { product: Product; siteId: s
         <Button onClick={onClose}>Cancel</Button>
       </div>
     </form>
+  )
+}
+
+function SourceIcon({ kind }: { kind: SourceKind }) {
+  const Icon = KIND_ICON[kind]
+  return (
+    <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
+      <Icon className="size-4.5" />
+    </span>
   )
 }
