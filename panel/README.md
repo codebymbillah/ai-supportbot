@@ -10,7 +10,7 @@ cd panel
 npm install
 npm run dev        # http://localhost:3100
 ```
-Sign in with any email. "Reset demo" in the top bar puts the sample data back.
+Sign in with any email. "Reset demo" at the bottom of the sidebar puts the sample data back.
 
 ## Two dashboards
 - **Client dashboard** (`/sites/...`): what a shop owner uses for their own sites. Every site opens on its **Overview**: chat on/off, this month in four numbers, chats waiting for the team, a setup checklist until it is done, and anything broken.
