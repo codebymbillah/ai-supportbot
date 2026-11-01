@@ -1,5 +1,5 @@
 /* In the project's global CSS (Tailwind v4). One line, so Tailwind finds the classes the package uses: */
-@source "../node_modules/@techabyte/support-chat/src";
+@source "../node_modules/dotbyte-chat/src";
 
 /* Optional: set the chat's colours here instead of in the config. Any of these, on :root or any parent: */
 :root {

@@ -1,11 +1,11 @@
-# @techabyte/support-chat
+# dotbyte-chat
 
 An AI sales and support chat for Next.js: a floating button and a chat window, a safe server door to the backend, a scripted demo for review, and a written backend contract. Built for TransfarX first. A new project brings its own name, colours, words and backend tools; nothing inside the package names a brand.
 
 ## Install: one command
 Run this in the root folder of your Next.js project (Next.js 15 or 16, App Router, Tailwind 4):
 ```
-npx github:TechaByte-Solutions/support-chat-kit#v0.4.3 init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
+npx github:TechaByte-Solutions/dotbyte-chat#v0.5.0 init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
 ```
 Change the name and the backend address to yours, then restart the dev server (`npm run dev`). That is all.
 
@@ -24,12 +24,14 @@ It installs the package and sets the project up. It adds only what is missing, n
 
 **Check it works:** open `/api/chat/status` in the browser. Some JSON means the door works. The chat button shows when your backend's chat settings say the chat is on.
 
+**Set up before the rename (`@techabyte/support-chat`)?** Run the same command again. It swaps the old name for `dotbyte-chat` in the route, `next.config`, the CSS line and the layout, and replaces the dependency. Older code that still says `SupportChat` keeps working.
+
 **If a step says "to do"**, `init` could not do it safely (for example a Tailwind 3 project, an unusual `next.config`, or a route that already exists). It tells you the exact line to add. `INSTALL.md` has every step for doing it by hand.
 
 ### Using our hosted chat (no backend work for you)
 If we host the chat for you, you change nothing on your side except two things in your project: a site key and the command below. Everything else (on/off, name, greeting, photo rules, allowed domains) is set in the dashboard.
 ```
-npx github:TechaByte-Solutions/support-chat-kit#v0.4.3 init --key sk_live_xxx --brand "Your Shop" --layout
+npx github:TechaByte-Solutions/dotbyte-chat#v0.5.0 init --key sk_live_xxx --brand "Your Shop" --layout
 ```
 The key is saved on the server only (`SUPPORT_CHAT_KEY`). What the service and dashboard must provide is in `docs/HOSTED-SERVICE.md`: the service is planned, not built yet.
 
@@ -51,7 +53,7 @@ It **polls** (it does not stream): the widget asks for new messages every 1.7 s 
 ## What is in the package
 ```
 src/
-  index.ts        the client entry: SupportChat, createHttpTransport, createDemoTransport, labels, types
+  index.ts        the client entry: DotbyteChat, createHttpTransport, createDemoTransport, labels, types
   types.ts        every type, and the SupportChatConfig a project fills in
   server/         the safe door (server code only): index.ts createChatProxy, guard.ts defaultGuard,
                   messages.ts and photos.ts rebuild what a browser sent, fields.ts small readers
@@ -61,16 +63,16 @@ src/
   transport/      how the widget talks: http-transport.ts (the real backend), demo.ts (scripted, for review)
   state/          the chat's logic: use-support-chat.ts (polling), guest-storage.ts, safety.ts, prepare-images.ts
   labels/         every sentence the widget writes: labels.ts (English), labels-bn.ts (a ready Bangla set)
-  styles/         support-chat.css: motion, border colour and the brand variables
+  styles/         dotbyte-chat.css: motion, border colour and the brand variables
   lib/            cn.ts
 panel/            the client dashboard (demo data for now): settings, products, inbox, team. See panel/README.md
-cli/              `npx support-chat init`: sets a project up with one command
+cli/              `npx dotbyte-chat init`: sets a project up with one command
 example/          a route, a wrapper, demo scripts and the CSS lines a new project copies
 docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (module and adapter), HOSTED-SERVICE.md (what a client sets), backend-context-2026-11-01.md (making the Laravel chat a package),
                   SERVICE-BUILD-GUIDE.md (the service, the panel and each client's product data)
 tests/            43 tests: safety rules, labels, the server door, the reading of backend answers, the setup command
 ```
-Outside the package only two paths are public: `@techabyte/support-chat` (`src/index.ts`) and `@techabyte/support-chat/server` (`src/server/index.ts`). Everything else can move without breaking a project.
+Outside the package only two paths are public: `dotbyte-chat` (`src/index.ts`) and `dotbyte-chat/server` (`src/server/index.ts`). Everything else can move without breaking a project.
 
 ## Rules that travel with it
 - No model key and no direct backend call in the browser. Everything goes through the project's own route.

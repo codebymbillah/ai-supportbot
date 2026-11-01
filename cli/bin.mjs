@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { runInit } from "./init.mjs"
 
-const HELP = `support-chat: set up the support chat in a Next.js project
+const HELP = `dotbyte-chat: set up the chat in a Next.js project
 
 Usage (run in the project's root folder). One command: it also installs the package.
-  npx github:TechaByte-Solutions/support-chat-kit#v0.3.0 init [options]
-  (if the package is already installed: npx support-chat init [options])
+  npx github:TechaByte-Solutions/dotbyte-chat#v0.5.0 init [options]
+  (if the package is already installed: npx dotbyte-chat init [options])
 
 Options:
   --brand "Acme Books"   the name written into the chat (default: from package.json)
@@ -33,7 +33,7 @@ const dryRun = args.includes("--dry-run")
 const { ok, steps } = runInit({ brand: value("--brand"), apiUrl: value("--api-url"), siteKey: value("--key"), layout: args.includes("--layout"), dryRun, install: true })
 
 const mark = { created: "+ created ", changed: "~ changed ", kept: "= kept    ", manual: "! to do   ", error: "x error   " }
-console.log(`\nsupport-chat init${dryRun ? " (dry run: nothing was written)" : ""}\n`)
+console.log(`\ndotbyte-chat init${dryRun ? " (dry run: nothing was written)" : ""}\n`)
 for (const s of steps) console.log(`${mark[s.status]} ${s.file}\n           ${s.note}`)
 
 if (!ok) process.exit(1)

@@ -20,7 +20,7 @@
   }
 }
 
-/* Motion the support-chat add-on brings with it, so a project does not have to copy keyframes. Names start with sc- to avoid clashes. */
+/* Motion dotbyte-chat brings with it, so a project does not have to copy keyframes. Names start with sc- to avoid clashes. */
 @keyframes sc-rise {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }

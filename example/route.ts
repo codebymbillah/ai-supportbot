@@ -1,5 +1,5 @@
 // app/api/chat/[...path]/route.ts: the safe door between the browser and the backend. The whole file:
-import { createChatProxy } from "@techabyte/support-chat/server"
+import { createChatProxy } from "dotbyte-chat/server"
 
 export const { GET, POST } = createChatProxy() // reads API_URL from the environment
 

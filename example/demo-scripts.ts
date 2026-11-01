@@ -1,6 +1,6 @@
 // A scripted stand-in for review before the backend is ready: replies after a short wait, sends nothing, the header says Demo.
 // Use it as `transport: createDemoTransport({ scripts, fallback })` with `demo: true` in the config.
-import { createDemoTransport, type DemoScript } from "@techabyte/support-chat"
+import { createDemoTransport, type DemoScript } from "dotbyte-chat"
 
 const scripts: DemoScript[] = [
   { match: /price|cost|দাম/i, text: { en: "Prices depend on quantity. (sample)", bn: "দাম পরিমাণের উপর নির্ভর করে। (নমুনা)", bl: "Dam poriman er upor nirbhor kore. (sample)" } },

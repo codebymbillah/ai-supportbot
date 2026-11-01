@@ -1,4 +1,4 @@
-// Types shared by the support-chat add-on. Nothing in this folder imports from the rest of the project, so the folder can be copied
+// Types shared by dotbyte-chat. Nothing in this folder imports from the rest of the project, so the folder can be copied
 // into another project as it is. Project details (brand, texts, the demo) come in through `SupportChatConfig`.
 //
 // How the chat talks to a backend: the visitor's message is saved at once, the answer is written a few seconds later, and the widget

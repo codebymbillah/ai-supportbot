@@ -3,7 +3,7 @@
 For the product lead and the backend team. Decided: this becomes a product, a few of our existing clients try it first, and each client's own site is where its product data comes from. This guide says how the backend splits the module out first, where it lives, and how product data gets in. It builds on `BACKEND-MODULE.md` (what is module and what is adapter) and `HOSTED-SERVICE.md` (what the client does).
 
 ## 1. One repository for the whole product
-Keep everything in this repository (`support-chat-kit`) so versions move together:
+Keep everything in this repository (`dotbyte-chat`) so versions move together:
 ```
 src/ cli/ example/ tests/    the website kit (npm, exists)
 service/                     the Laravel package: chat module + multi-site layer (new)

@@ -1,6 +1,6 @@
 import type { ChatTheme } from "../types"
 
-/** The widget's colours as CSS variables (only the ones the project set; the rest come from support-chat.css). */
+/** The widget's colours as CSS variables (only the ones the project set; the rest come from dotbyte-chat.css). */
 export function themeVars(theme?: ChatTheme): React.CSSProperties | undefined {
   if (!theme) return undefined
   const map: [keyof ChatTheme, string][] = [

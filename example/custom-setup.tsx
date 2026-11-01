@@ -1,21 +1,21 @@
 "use client"
 
-// components/support-chat.tsx: the FULL setup, for a project that wants its own words, colours, money format, cart or Bangla font.
+// components/chat.tsx: the FULL setup, for a project that wants its own words, colours, money format, cart or Bangla font.
 // Most projects need none of this: see minimal-layout.tsx.
 import { usePathname } from "next/navigation"
 import { useMemo } from "react"
-import { BANGLA_LABELS, createHttpTransport, SupportChat, type SupportChatConfig } from "@techabyte/support-chat"
-import "@techabyte/support-chat/styles.css"
+import { BANGLA_LABELS, createHttpTransport, DotbyteChat, type DotbyteChatConfig } from "dotbyte-chat"
+import "dotbyte-chat/styles.css"
 import { taka } from "@/utils"
 
 const BRAND = "Acme Books"
 const transport = createHttpTransport("/api/chat", { brandName: BRAND, labels: BANGLA_LABELS })
 
 /** `settings` comes from the backend's GET /chat/config (read on the server): names, greeting, chips, whether photos are on. */
-export function AcmeSupportChat({ settings }: { settings?: { assistantName?: string; greeting?: string; images?: SupportChatConfig["images"] } }) {
+export function AcmeChat({ settings }: { settings?: { assistantName?: string; greeting?: string; images?: DotbyteChatConfig["images"] } }) {
   const pathname = usePathname()
 
-  const config = useMemo<SupportChatConfig>(
+  const config = useMemo<DotbyteChatConfig>(
     () => ({
       brandName: BRAND,
       assistantName: settings?.assistantName ?? "Acme assistant",
@@ -37,5 +37,5 @@ export function AcmeSupportChat({ settings }: { settings?: { assistantName?: str
     [settings]
   )
 
-  return <SupportChat config={config} context={{ path: pathname }} fallbackContact={{ phone: "+8801700000000", hours: "10am to 7pm" }} />
+  return <DotbyteChat config={config} context={{ path: pathname }} fallbackContact={{ phone: "+8801700000000", hours: "10am to 7pm" }} />
 }

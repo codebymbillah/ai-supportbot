@@ -1,6 +1,6 @@
 # Backend: turning the chat into a reusable Laravel module
 
-For the backend team. The storefront side is already a separate package (`@techabyte/support-chat`, this repo). The backend chat is still part of the TransfarX Laravel app. To use the chat in another project, the backend needs the same split: one **module** that is the same for every project, and a small **adapter** each project writes. This file says what goes where and what "done" looks like.
+For the backend team. The storefront side is already a separate package (`dotbyte-chat`, this repo). The backend chat is still part of the TransfarX Laravel app. To use the chat in another project, the backend needs the same split: one **module** that is the same for every project, and a small **adapter** each project writes. This file says what goes where and what "done" looks like.
 
 The wire contract between the two sides is `docs/CONTRACT.md` and the live `swagger/openapi.yaml`. It does not change because of this work: a project that moves to the module must keep answering exactly as today.
 
@@ -18,7 +18,7 @@ The wire contract between the two sides is `docs/CONTRACT.md` and the live `swag
 | Staff side | the inbox (open and with-agent by default, a closed tab, a customer's chats on their profile), taking a chat over, replying, closing, deleting a chat or all of a customer's chats, the thumbs-down review list, the numbers (solved by the assistant, handed over, first reply time, cost per chat). Ship the views so a project can publish and restyle them. |
 | Settings | one config file and an admin page: assistant name, tagline, greeting, suggestion chips, photo rules, limits, retention, support contact and hours, on/off switch. |
 | Events | `ChatMessageReceived`, `ChatHandoffRequested`, `ChatDraftConfirmed`, `ChatClosed`, so a project can add notifications without editing the module. |
-| Install | `composer require`, `php artisan support-chat:install` (publishes config, migrations, views), `php artisan support-chat:check` (verifies the adapter is complete and the contract answers). |
+| Install | `composer require`, `php artisan dotbyte-chat:install` (publishes config, migrations, views), `php artisan dotbyte-chat:check` (verifies the adapter is complete and the contract answers). |
 
 ### In the project's adapter (different for each project)
 The module calls these through interfaces; the project implements them.
@@ -51,11 +51,11 @@ The routes, field names, status values and error shapes in the contract. The `X-
 ## 4. Work order
 Each step keeps TransfarX working, so it can be released one at a time.
 
-1. **Extract, no behaviour change.** Move the chat tables, models, controllers, jobs and admin views into a package inside the repo (`packages/support-chat`), loaded by path. TransfarX answers exactly as before. *Large.*
+1. **Extract, no behaviour change.** Move the chat tables, models, controllers, jobs and admin views into a package inside the repo (`packages/dotbyte-chat`), loaded by path. TransfarX answers exactly as before. *Large.*
 2. **Define the adapter interfaces** (section 1) and move every TransfarX-specific thing behind them: prompt text, product search, price tools, the sourcing draft, supplier and marketplace terms. *Large.*
 3. **Contract tests.** A test suite in the package that sends the calls in `docs/CONTRACT.md` and checks every field, status and error, run against TransfarX's adapter. This is the safety net for step 4. *Medium.*
 4. **Second adapter.** Write the adapter for the next project (or a small sample one inside the package's tests) to prove nothing from TransfarX is left in the module. *Medium.*
-5. **Make it installable.** Own git repository, `composer.json`, semantic versions, `CHANGELOG`, `support-chat:install` and `support-chat:check`. *Medium.*
+5. **Make it installable.** Own git repository, `composer.json`, semantic versions, `CHANGELOG`, `dotbyte-chat:install` and `dotbyte-chat:check`. *Medium.*
 6. **Documentation for a new project:** the adapter checklist, the settings, the scheduled jobs to register, the queue and cache needs. *Small.*
 
 ## 5. Before the first release of the module
@@ -63,7 +63,7 @@ Each step keeps TransfarX working, so it can be released one at a time.
 - [ ] The forbidden-terms check is covered by tests with real supplier and marketplace words, and by prompts that try to extract the instructions.
 - [ ] Card-like numbers are masked in storage and logs; `guest_token` is masked in access logs.
 - [ ] The spend limit stops the assistant and the widget shows the support numbers.
-- [ ] A fresh Laravel app can `composer require` the module, run `support-chat:install`, write a minimal adapter and pass `support-chat:check`.
+- [ ] A fresh Laravel app can `composer require` the module, run `dotbyte-chat:install`, write a minimal adapter and pass `dotbyte-chat:check`.
 - [ ] Retention numbers are approved by the business (closed 90 days then archive, archived 365 days then delete unless flagged as a sale or linked to an order or price request: today's proposal).
 
 ## 6. Open decisions for the product lead

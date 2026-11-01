@@ -1,12 +1,14 @@
-// `npx support-chat init`: sets up the chat in a Next.js project with one command. It adds only what is missing, never overwrites a
+// `npx dotbyte-chat init`: sets up the chat in a Next.js project with one command. It adds only what is missing, never overwrites a
 // file's content, and says what it did. The logic lives here (no prompts, no process.exit) so it can be tested.
 import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-export const PACKAGE = "@techabyte/support-chat"
-const REPO = "github:TechaByte-Solutions/support-chat-kit"
+export const PACKAGE = "dotbyte-chat"
+const REPO = "github:TechaByte-Solutions/dotbyte-chat"
+/** The name before 0.5.0. A project set up with it is moved to the new name (imports, config, CSS line, dependency). */
+export const OLD_PACKAGE = "@techabyte/support-chat"
 
 const ROUTE = `import { createChatProxy } from "${PACKAGE}/server"
 
@@ -28,11 +30,15 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
   const steps = []
   const rel = (p) => posix(path.relative(cwd, p)) || "."
   const add = (status, file, note) => steps.push({ status, file: typeof file === "string" && path.isAbsolute(file) ? rel(file) : file, note })
+  // On a dry run nothing is written, but later steps still see what earlier ones would have written.
+  const overlay = new Map()
   const write = (file, text) => {
+    overlay.set(file, text)
     if (dryRun) return
     fs.mkdirSync(path.dirname(file), { recursive: true })
     fs.writeFileSync(file, text)
   }
+  const readNow = (file) => overlay.get(file) ?? read(file)
 
   // ---- is this a Next.js project?
   const pkgFile = path.join(cwd, "package.json")
@@ -42,7 +48,7 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
     add("error", "package.json", inner.length === 1 ? `No package.json here, but there is one in "${inner[0]}". Run: cd ${inner[0]}  and then this command again.` : "No package.json here. Run this from the root folder of your Next.js project.")
     return { ok: false, steps }
   }
-  const pkg = JSON.parse(read(pkgFile))
+  const pkg = JSON.parse(readNow(pkgFile))
   if (!pkg.dependencies?.next && !pkg.devDependencies?.next) {
     add("error", "package.json", "This does not look like a Next.js project (no `next` dependency).")
     return { ok: false, steps }
@@ -54,12 +60,36 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
   }
   const isTs = exists(path.join(cwd, "tsconfig.json"))
 
+  // ---- 0a. a project set up before the rename: swap the old name for the new one in the files init wrote. Only the exact package
+  // name is replaced (and the component name in the layout), so nothing else in those files changes.
+  const hadOld = !!(pkg.dependencies?.[OLD_PACKAGE] || pkg.devDependencies?.[OLD_PACKAGE])
+  const touched = [
+    ...["route.ts", "route.js"].map((n) => path.join(appDir, "api", "chat", "[...path]", n)),
+    ...["next.config.ts", "next.config.mjs", "next.config.js", "next.config.cjs"].map((n) => path.join(cwd, n)),
+    ...["globals.css", "global.css", "styles.css"].map((n) => path.join(appDir, n)),
+    ...["src/styles/globals.css", "styles/globals.css"].map((n) => path.join(cwd, n)),
+    ...["layout.tsx", "layout.jsx", "layout.js"].map((n) => path.join(appDir, n)),
+  ].filter((f, i, all) => exists(f) && all.indexOf(f) === i)
+  for (const f of touched) {
+    const text = readNow(f)
+    if (!text.includes(OLD_PACKAGE)) continue
+    let out = text.split(OLD_PACKAGE).join(PACKAGE).replace("/* The support chat's classes (added by `support-chat init`). */", "/* The chat's classes (added by `dotbyte-chat init`). */")
+    if (/layout\.[jt]sx?$/.test(f)) out = out.replace(/\bSupportChat\b/g, "DotbyteChat")
+    write(f, out)
+    add("changed", f, `Renamed ${OLD_PACKAGE} to ${PACKAGE}.`)
+  }
+
   // ---- 0. the package itself (only when asked: the command line does, the tests do not)
+  if (install && hadOld && !dryRun) {
+    spawnSync("npm", ["uninstall", OLD_PACKAGE], { cwd, stdio: "inherit", shell: process.platform === "win32" })
+    delete pkg.dependencies?.[OLD_PACKAGE]
+    delete pkg.devDependencies?.[OLD_PACKAGE]
+  }
   if (install) {
     if (pkg.dependencies?.[PACKAGE] || pkg.devDependencies?.[PACKAGE]) {
       add("kept", "package.json", "The chat package is already installed.")
     } else {
-      const version = JSON.parse(read(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json"))).version
+      const version = JSON.parse(readNow(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json"))).version
       const spec = `${REPO}#v${version}`
       if (dryRun) {
         add("created", "package.json", `Would run: npm install ${spec}`)
@@ -79,7 +109,7 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
   const otherRoute = path.join(appDir, "api", "chat", "[...path]", isTs ? "route.js" : "route.ts")
   const existingRoute = [route, otherRoute].find((f) => exists(f))
   if (existingRoute) {
-    add(read(existingRoute).includes("createChatProxy") ? "kept" : "manual", existingRoute, read(existingRoute).includes("createChatProxy") ? "The chat route is already there." : "A route already exists here and is not the chat's. Left as it is: merge it by hand (see example/route.ts).")
+    add(readNow(existingRoute).includes("createChatProxy") ? "kept" : "manual", existingRoute, readNow(existingRoute).includes("createChatProxy") ? "The chat route is already there." : "A route already exists here and is not the chat's. Left as it is: merge it by hand (see example/route.ts).")
   } else {
     write(route, ROUTE)
     add("created", route, "The safe door between the browser and the backend.")
@@ -93,7 +123,7 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
     write(created, `/** @type {import("next").NextConfig} */\nconst nextConfig = {\n  transpilePackages: ["${PACKAGE}"],\n}\n\nexport default nextConfig\n`)
     add("created", created, "Lets Next compile the chat package.")
   } else {
-    let text = read(configFile)
+    let text = readNow(configFile)
     if (text.includes(PACKAGE)) {
       add("kept", configFile, "transpilePackages already lists the chat package.")
     } else if (/transpilePackages\s*:\s*\[/.test(text)) {
@@ -118,25 +148,25 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
     ...["globals.css", "global.css", "styles.css"].map((n) => path.join(appDir, n)),
     ...["src/styles/globals.css", "styles/globals.css", "src/app/globals.css", "app/globals.css"].map((n) => path.join(cwd, n)),
   ].filter((f, i, all) => exists(f) && all.indexOf(f) === i)
-  const cssFile = cssCandidates.find((f) => /tailwindcss/.test(read(f))) ?? cssCandidates[0]
+  const cssFile = cssCandidates.find((f) => /tailwindcss/.test(readNow(f))) ?? cssCandidates[0]
   if (!cssFile) {
     add("manual", "global CSS", `No global CSS file found. In yours, add: @source "<path to>/node_modules/${PACKAGE}/src";`)
   } else {
-    const css = read(cssFile)
+    const css = readNow(cssFile)
     const source = posix(path.relative(path.dirname(cssFile), path.join(cwd, "node_modules", PACKAGE, "src")))
-    if (css.includes("support-chat")) {
+    if (css.includes(PACKAGE)) {
       add("kept", cssFile, "Tailwind already sees the chat package.")
     } else if (/@tailwind\s+(base|components|utilities)/.test(css) && !/@import\s+["']tailwindcss/.test(css)) {
       add("manual", cssFile, "This project uses Tailwind 3. The chat needs Tailwind 4 (it uses `@source` and CSS variables); upgrade Tailwind first.")
     } else {
-      write(cssFile, `${css.replace(/\s*$/, "")}\n\n/* The support chat's classes (added by \`support-chat init\`). */\n@source "${source}";\n`)
+      write(cssFile, `${css.replace(/\s*$/, "")}\n\n/* The chat's classes (added by \`dotbyte-chat init\`). */\n@source "${source}";\n`)
       add("changed", cssFile, `Added @source "${source}".`)
     }
   }
 
   // ---- 4. the backend address, and the site key when the chat is hosted
   const envFile = [".env.local", ".env"].map((n) => path.join(cwd, n)).find((f) => exists(f)) ?? path.join(cwd, ".env.local")
-  let env = exists(envFile) ? read(envFile) : ""
+  let env = exists(envFile) ? readNow(envFile) : ""
   const has = (name) => new RegExp(`^\s*${name}\s*=`, "m").test(env)
   const line = (comment, name, value) => `${env && !env.endsWith("\n") ? "\n" : ""}${comment ? `# ${comment}\n` : ""}${name}=${value}\n`
   const wrote = []
@@ -160,21 +190,21 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
 
   // ---- 5. the chat in the layout (only with --layout; otherwise it says what to add)
   const name = (brand ?? String(pkg.name ?? "My Shop").replace(/^@[^/]+\//, "").split(/[-_\s]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")) || "My Shop"
-  const element = `<SupportChat config={{ brandName: ${JSON.stringify(name)} }} />`
+  const element = `<DotbyteChat config={{ brandName: ${JSON.stringify(name)} }} />`
   const layoutFile = ["layout.tsx", "layout.jsx", "layout.js"].map((n) => path.join(appDir, n)).find((f) => exists(f))
   if (!layoutFile) {
-    add("manual", "app/layout", `No root layout found. Add: import { SupportChat } from "${PACKAGE}" and ${element} inside <body>.`)
+    add("manual", "app/layout", `No root layout found. Add: import { DotbyteChat } from "${PACKAGE}" and ${element} inside <body>.`)
   } else {
-    const text = read(layoutFile)
-    if (text.includes("SupportChat")) {
+    const text = readNow(layoutFile)
+    if (/(DotbyteChat|SupportChat)/.test(text)) {
       add("kept", layoutFile, "The chat is already in the layout.")
     } else if (!layout) {
-      add("manual", layoutFile, `Add to the layout: import { SupportChat } from "${PACKAGE}", and ${element} after {children}. (Or run again with --layout and it does this.)`)
+      add("manual", layoutFile, `Add to the layout: import { DotbyteChat } from "${PACKAGE}", and ${element} after {children}. (Or run again with --layout and it does this.)`)
     } else {
       const count = text.split("{children}").length - 1
       const imports = [...text.matchAll(/^import .+$/gm)]
       if (count !== 1 || imports.length === 0) {
-        add("manual", layoutFile, `Could not place it safely. Add: import { SupportChat } from "${PACKAGE}", and ${element} after {children}.`)
+        add("manual", layoutFile, `Could not place it safely. Add: import { DotbyteChat } from "${PACKAGE}", and ${element} after {children}.`)
       } else {
         let out
         const own = text.match(/^([ \t]*)\{children\}[ \t]*$/m)
@@ -193,7 +223,7 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
         const last = imports[imports.length - 1]
         const semi = last[0].trimEnd().endsWith(";") ? ";" : ""
         const importEnd = (last.index ?? 0) + last[0].length
-        out = `${out.slice(0, importEnd)}\nimport { SupportChat } from "${PACKAGE}"${semi}${out.slice(importEnd)}`
+        out = `${out.slice(0, importEnd)}\nimport { DotbyteChat } from "${PACKAGE}"${semi}${out.slice(importEnd)}`
         write(layoutFile, out)
         add("changed", layoutFile, `Added the chat with the name "${name}".`)
       }

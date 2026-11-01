@@ -7,7 +7,7 @@ import { MAX_FIELD, rebuildForm } from "./photos"
 export { defaultGuard }
 
 // The support assistant's door to the backend, for the project's route handler (app/api/chat/[...path]/route.ts):
-//   import { createChatProxy } from "@/addons/support-chat/server"
+//   import { createChatProxy } from "dotbyte-chat/server"
 //   export const { GET, POST } = createChatProxy()   // reads API_URL; or createChatProxy({ apiUrl, authToken, guard })
 // Import it only from server code. The browser never calls the backend for the chat itself: this checks the request, adds the customer's
 // sign-in when there is one (the token is a cookie only the server can read), passes the visitor's address on for the backend's own limits,
@@ -76,7 +76,7 @@ function pass(res: Response, data: unknown) {
   // POST into a GET, so a message would look sent but never be saved. Say so instead.
   if (res.status >= 300 && res.status < 400) {
     const to = res.headers.get("location")
-    console.error(`[support-chat] The backend redirects ${res.url || "API_URL"}${to ? ` to ${to}` : ""}. Set API_URL to the final address (https).`)
+    console.error(`[dotbyte-chat] The backend redirects ${res.url || "API_URL"}${to ? ` to ${to}` : ""}. Set API_URL to the final address (https).`)
     return NextResponse.json({ message: "The chat is not set up correctly: the backend address redirects. Use its https address in API_URL." }, { status: 500, headers: { "Cache-Control": "no-store" } })
   }
   const retryAfter = res.headers.get("Retry-After")

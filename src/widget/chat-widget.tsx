@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { HeadsetIcon, MessageCircleIcon, SquarePenIcon, XIcon } from "lucide-react"
-import "../styles/support-chat.css"
+import "../styles/dotbyte-chat.css"
 import { cn } from "../lib/cn"
 import { AgentAvatar, Avatar, TypingDots } from "../messages/avatars"
 import { Bubble } from "../messages/bubble"
@@ -19,16 +19,18 @@ import { resolveConfig } from "./resolve-config"
 import { themeVars } from "./theme"
 import { useSlowReply } from "./use-slow-reply"
 
-/** Anything on the page can open the chat: `window.dispatchEvent(new Event("support-chat:open"))`. */
-export const OPEN_EVENT = "support-chat:open"
+/** Anything on the page can open the chat: `window.dispatchEvent(new Event("dotbyte-chat:open"))`. */
+export const OPEN_EVENT = "dotbyte-chat:open"
+/** The event name before 0.5.0, still listened to so older pages keep working. */
+const OLD_OPEN_EVENT = "support-chat:open"
 
 const ON: RemoteChatConfig = { enabled: true }
 
 /**
- * The floating button and the chat window. Mount it once, in a layout: `<SupportChat config={{ brandName: "Acme" }} />` is enough.
+ * The floating button and the chat window. Mount it once, in a layout: `<DotbyteChat config={{ brandName: "Acme" }} />` is enough.
  * Without a transport of its own it reads the backend's chat settings and shows nothing while the backend says the chat is off.
  */
-export function SupportChat({ config: input, context, fallbackContact }: { config: SupportChatInput; context?: ChatContext; fallbackContact?: ChatContact }) {
+export function DotbyteChat({ config: input, context, fallbackContact }: { config: SupportChatInput; context?: ChatContext; fallbackContact?: ChatContact }) {
   const pathname = usePathname()
   const fromBackend = input.useBackendConfig ?? !input.transport
   // undefined: not known yet. null: the backend could not say (the chat has no settings, or it is unreachable): nothing is shown.
@@ -99,7 +101,11 @@ function SupportChatInner({ config, context, fallbackContact }: { config: Suppor
   useEffect(() => {
     const show = () => setOpen(true)
     window.addEventListener(OPEN_EVENT, show)
-    return () => window.removeEventListener(OPEN_EVENT, show)
+    window.addEventListener(OLD_OPEN_EVENT, show)
+    return () => {
+      window.removeEventListener(OPEN_EVENT, show)
+      window.removeEventListener(OLD_OPEN_EVENT, show)
+    }
   }, [])
 
   // Focus the box when the window opens, close it with Escape, and on a phone keep the page behind from scrolling.
@@ -266,3 +272,6 @@ function SupportChatInner({ config, context, fallbackContact }: { config: Suppor
     </ChatActionsProvider>
   )
 }
+
+/** The component's name before 0.5.0. Kept so a project set up earlier keeps working. */
+export const SupportChat = DotbyteChat

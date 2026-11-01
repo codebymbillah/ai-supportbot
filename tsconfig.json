@@ -15,8 +15,8 @@
     "allowJs": true,
     "checkJs": false,
     "paths": {
-      "@techabyte/support-chat": ["./src/index.ts"],
-      "@techabyte/support-chat/server": ["./src/server/index.ts"]
+      "dotbyte-chat": ["./src/index.ts"],
+      "dotbyte-chat/server": ["./src/server/index.ts"]
     }
   },
   "include": ["src", "tests", "cli"]

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 (1 Nov 2026)
+Renamed to **dotbyte-chat**.
+- Package `dotbyte-chat` (was `@techabyte/support-chat`), repository `TechaByte-Solutions/dotbyte-chat` (was `support-chat-kit`), command `npx dotbyte-chat init`, component `<DotbyteChat>`, types `DotbyteChatConfig` and `DotbyteChatInput`, open event `dotbyte-chat:open`, stylesheet `dotbyte-chat.css`.
+- Nothing breaks for a project set up earlier: `SupportChat` and the `support-chat:open` event still work, and the browser storage key is unchanged, so visitors keep their chats. Running `init` again moves the project to the new name (imports, `transpilePackages`, the `@source` line, the dependency).
+- `--dry-run` now shows later steps as they would be after the earlier ones. 50 tests.
+
 ## 0.4.3 (1 Nov 2026)
 - The door no longer follows a backend redirect. An `API_URL` that starts with `http://` on a server that moves to `https://` turned each message into a read, so the chat opened but nothing was saved. Now the route answers with a clear "use the https address" message and logs the address it was sent to.
 - `init --api-url http://...` (not localhost) marks the step "to do" and says to use `https://`. 50 tests.

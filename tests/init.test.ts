@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 `
 
-describe("support-chat init", () => {
+describe("dotbyte-chat init", () => {
   it("sets up a typical project under src/app", () => {
     const dir = project({
       "tsconfig.json": "{}",
@@ -50,16 +50,16 @@ describe("support-chat init", () => {
     expect(r.ok).toBe(true)
     // the route is in the right folder with the bracket name
     expect(read(dir, "src/app/api/chat/[...path]/route.ts")).toContain("createChatProxy()")
-    expect(read(dir, "next.config.ts")).toContain('transpilePackages: ["@techabyte/support-chat"]')
+    expect(read(dir, "next.config.ts")).toContain('transpilePackages: ["dotbyte-chat"]')
     expect(read(dir, "next.config.ts")).toContain("reactStrictMode: true")
     // the CSS line points from the CSS file to node_modules
-    expect(read(dir, "src/app/globals.css")).toContain('@source "../../node_modules/@techabyte/support-chat/src";')
+    expect(read(dir, "src/app/globals.css")).toContain('@source "../../node_modules/dotbyte-chat/src";')
     expect(read(dir, "src/app/globals.css")).toContain("body { margin: 0 }")
     expect(read(dir, ".env.local")).toContain("API_URL=https://api.example.com/v1")
     const layout = read(dir, "src/app/layout.tsx")
-    expect(layout).toContain('import { SupportChat } from "@techabyte/support-chat"')
-    expect(layout).toContain('<SupportChat config={{ brandName: "Acme Books" }} />')
-    expect(layout.indexOf("{children}")).toBeLessThan(layout.indexOf("<SupportChat"))
+    expect(layout).toContain('import { DotbyteChat } from "dotbyte-chat"')
+    expect(layout).toContain('<DotbyteChat config={{ brandName: "Acme Books" }} />')
+    expect(layout.indexOf("{children}")).toBeLessThan(layout.indexOf("<DotbyteChat"))
   })
 
   it("uses a .js route and the app folder when the project has no TypeScript", () => {
@@ -67,9 +67,9 @@ describe("support-chat init", () => {
     const r = runInit({ cwd: dir })
     expect(has(dir, "app/api/chat/[...path]/route.js")).toBe(true)
     expect(has(dir, "app/api/chat/[...path]/route.ts")).toBe(false)
-    expect(read(dir, "app/globals.css")).toContain('@source "../node_modules/@techabyte/support-chat/src";')
+    expect(read(dir, "app/globals.css")).toContain('@source "../node_modules/dotbyte-chat/src";')
     // without --layout the layout is left alone and the step says what to add
-    expect(read(dir, "app/layout.js")).not.toContain("SupportChat")
+    expect(read(dir, "app/layout.js")).not.toContain("DotbyteChat")
     expect(status(r)["app/layout.js"]).toBe("manual")
     // no API address given: a placeholder, flagged
     expect(read(dir, ".env.local")).toContain("API_URL=https://your-backend.example.com/api/v1")
@@ -84,7 +84,7 @@ describe("support-chat init", () => {
   it("handles the config shapes people write", () => {
     const a = project({ "app/x.txt": "", "next.config.mjs": `export default {\n  images: {},\n}\n` })
     runInit({ cwd: a })
-    expect(read(a, "next.config.mjs")).toContain('transpilePackages: ["@techabyte/support-chat"]')
+    expect(read(a, "next.config.mjs")).toContain('transpilePackages: ["dotbyte-chat"]')
 
     const b = project({ "app/x.txt": "", "next.config.js": `module.exports = {\n  images: {},\n}\n` })
     runInit({ cwd: b })
@@ -92,7 +92,7 @@ describe("support-chat init", () => {
 
     const c = project({ "app/x.txt": "", "next.config.mjs": `const nextConfig = {\n  transpilePackages: ["other"],\n}\nexport default nextConfig\n` })
     runInit({ cwd: c })
-    expect(read(c, "next.config.mjs")).toContain('transpilePackages: ["@techabyte/support-chat", "other"]')
+    expect(read(c, "next.config.mjs")).toContain('transpilePackages: ["dotbyte-chat", "other"]')
 
     const d = project({ "app/x.txt": "", "next.config.mjs": `export default someWrapper(buildConfig())\n` })
     const r = runInit({ cwd: d })
@@ -103,7 +103,28 @@ describe("support-chat init", () => {
   it("creates a next.config when there is none", () => {
     const dir = project({ "app/x.txt": "" })
     runInit({ cwd: dir })
-    expect(read(dir, "next.config.mjs")).toContain("@techabyte/support-chat")
+    expect(read(dir, "next.config.mjs")).toContain("dotbyte-chat")
+  })
+
+  it("moves a project set up with the old name (@techabyte/support-chat) to dotbyte-chat", () => {
+    const dir = project({
+      "package.json": JSON.stringify({ name: "acme", dependencies: { next: "16.0.0", "@techabyte/support-chat": "github:x/y#v0.4.3" } }),
+      "tsconfig.json": "{}",
+      "next.config.ts": `const nextConfig = {\n  transpilePackages: ["@techabyte/support-chat"],\n}\nexport default nextConfig\n`,
+      "app/globals.css": `@import "tailwindcss";\n\n@source "../node_modules/@techabyte/support-chat/src";\n`,
+      "app/api/chat/[...path]/route.ts": `import { createChatProxy } from "@techabyte/support-chat/server"\n\nexport const { GET, POST } = createChatProxy()\n`,
+      "app/layout.tsx": LAYOUT.replace(`import "./globals.css"\n`, `import "./globals.css"\nimport { SupportChat } from "@techabyte/support-chat"\n`).replace("{children}\n", `{children}\n        <SupportChat config={{ brandName: "Acme" }} />\n`),
+    })
+    const r = runInit({ cwd: dir, layout: true })
+    expect(read(dir, "next.config.ts")).toContain('transpilePackages: ["dotbyte-chat"]')
+    expect(read(dir, "app/globals.css")).toContain('@source "../node_modules/dotbyte-chat/src";')
+    expect(read(dir, "app/globals.css").match(/@source/g)).toHaveLength(1)
+    expect(read(dir, "app/api/chat/[...path]/route.ts")).toContain('from "dotbyte-chat/server"')
+    const layout = read(dir, "app/layout.tsx")
+    expect(layout).toContain('import { DotbyteChat } from "dotbyte-chat"')
+    expect(layout).toContain('<DotbyteChat config={{ brandName: "Acme" }} />')
+    expect(layout).not.toContain("@techabyte")
+    expect(r.steps.filter((s) => s.note.startsWith("Renamed"))).toHaveLength(4)
   })
 
   it("changes nothing the second time", () => {
@@ -178,8 +199,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     const r = runInit({ cwd: dir, brand: "Acme Books", layout: true })
     expect(status(r)["app/layout.tsx"]).toBe("changed")
     const out = read(dir, "app/layout.tsx")
-    expect(out).toContain(`import "./globals.css";\nimport { SupportChat } from "@techabyte/support-chat";\n`)
-    expect(out).toContain(`      <body className="min-h-full flex flex-col">\n        {children}\n        <SupportChat config={{ brandName: "Acme Books" }} />\n      </body>\n`)
+    expect(out).toContain(`import "./globals.css";\nimport { DotbyteChat } from "dotbyte-chat";\n`)
+    expect(out).toContain(`      <body className="min-h-full flex flex-col">\n        {children}\n        <DotbyteChat config={{ brandName: "Acme Books" }} />\n      </body>\n`)
     expect(runInit({ cwd: dir, layout: true }).steps.find((s) => s.file === "app/layout.tsx")?.status).toBe("kept")
   })
 
@@ -196,7 +217,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   it("will not guess in a layout it cannot read safely", () => {
     const dir = project({ "tsconfig.json": "{}", "app/globals.css": `@import "tailwindcss";\n`, "app/layout.tsx": `export default function L(props) { return <html><body>{props.children}</body></html> }\n` })
     const r = runInit({ cwd: dir, layout: true })
-    expect(read(dir, "app/layout.tsx")).not.toContain("SupportChat")
+    expect(read(dir, "app/layout.tsx")).not.toContain("DotbyteChat")
     expect(status(r)["app/layout.tsx"]).toBe("manual")
   })
 
