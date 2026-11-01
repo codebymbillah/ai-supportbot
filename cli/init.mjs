@@ -37,7 +37,9 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
   // ---- is this a Next.js project?
   const pkgFile = path.join(cwd, "package.json")
   if (!exists(pkgFile)) {
-    add("error", "package.json", "No package.json here. Run this from the root folder of your Next.js project.")
+    // A common slip: create-next-app made the project one folder deeper (my-app/my-app). Name it, so the fix is one cd.
+    const inner = fs.readdirSync(cwd, { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== "node_modules" && exists(path.join(cwd, d.name, "package.json"))).map((d) => d.name)
+    add("error", "package.json", inner.length === 1 ? `No package.json here, but there is one in "${inner[0]}". Run: cd ${inner[0]}  and then this command again.` : "No package.json here. Run this from the root folder of your Next.js project.")
     return { ok: false, steps }
   }
   const pkg = JSON.parse(read(pkgFile))
@@ -166,17 +168,29 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
     } else if (!layout) {
       add("manual", layoutFile, `Add to the layout: import { SupportChat } from "${PACKAGE}", and ${element} after {children}. (Or run again with --layout and it does this.)`)
     } else {
-      const spots = [...text.matchAll(/^([ \t]*)\{children\}[ \t]*$/gm)]
+      const count = text.split("{children}").length - 1
       const imports = [...text.matchAll(/^import .+$/gm)]
-      if (spots.length !== 1 || imports.length === 0) {
+      if (count !== 1 || imports.length === 0) {
         add("manual", layoutFile, `Could not place it safely. Add: import { SupportChat } from "${PACKAGE}", and ${element} after {children}.`)
       } else {
-        const spot = spots[0]
-        const lastImport = imports[imports.length - 1]
-        const afterChildren = (spot.index ?? 0) + spot[0].length
-        let out = `${text.slice(0, afterChildren)}\n${spot[1]}${element}${text.slice(afterChildren)}`
-        const importEnd = (lastImport.index ?? 0) + lastImport[0].length
-        out = `${out.slice(0, importEnd)}\nimport { SupportChat } from "${PACKAGE}"${out.slice(importEnd)}`
+        let out
+        const own = text.match(/^([ \t]*)\{children\}[ \t]*$/m)
+        const inBody = text.match(/^([ \t]*)(<body\b[^>]*>)\{children\}<\/body>/m)
+        if (own) {
+          // {children} on its own line: the chat goes on the next line, same indent.
+          const at = (own.index ?? 0) + own[0].length
+          out = `${text.slice(0, at)}\n${own[1]}${element}${text.slice(at)}`
+        } else if (inBody) {
+          // The create-next-app shape: <body className="...">{children}</body> on one line.
+          const pad = inBody[1]
+          out = text.replace(inBody[0], `${pad}${inBody[2]}\n${pad}  {children}\n${pad}  ${element}\n${pad}</body>`)
+        } else {
+          out = text.replace("{children}", `{children}${element}`)
+        }
+        const last = imports[imports.length - 1]
+        const semi = last[0].trimEnd().endsWith(";") ? ";" : ""
+        const importEnd = (last.index ?? 0) + last[0].length
+        out = `${out.slice(0, importEnd)}\nimport { SupportChat } from "${PACKAGE}"${semi}${out.slice(importEnd)}`
         write(layoutFile, out)
         add("changed", layoutFile, `Added the chat with the name "${name}".`)
       }

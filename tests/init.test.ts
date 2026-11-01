@@ -153,6 +153,37 @@ describe("support-chat init", () => {
     expect(status(r)["app/api/chat/[...path]/route.ts"]).toBe("manual")
   })
 
+  it("places the chat in the layout create-next-app makes today (body and children on one line)", () => {
+    const fresh = `import type { Metadata } from "next";
+import "./globals.css";
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
+  return (
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full flex flex-col">{children}</body>
+    </html>
+  );
+}
+`
+    const dir = project({ "tsconfig.json": "{}", "app/globals.css": `@import "tailwindcss";\n`, "app/layout.tsx": fresh })
+    const r = runInit({ cwd: dir, brand: "Acme Books", layout: true })
+    expect(status(r)["app/layout.tsx"]).toBe("changed")
+    const out = read(dir, "app/layout.tsx")
+    expect(out).toContain(`import "./globals.css";\nimport { SupportChat } from "@techabyte/support-chat";\n`)
+    expect(out).toContain(`      <body className="min-h-full flex flex-col">\n        {children}\n        <SupportChat config={{ brandName: "Acme Books" }} />\n      </body>\n`)
+    expect(runInit({ cwd: dir, layout: true }).steps.find((s) => s.file === "app/layout.tsx")?.status).toBe("kept")
+  })
+
+  it("names the inner folder when create-next-app made the project one level deeper", () => {
+    const outer = fs.mkdtempSync(path.join(os.tmpdir(), "chat-init-"))
+    dirs.push(outer)
+    fs.mkdirSync(path.join(outer, "my-app"))
+    fs.writeFileSync(path.join(outer, "my-app", "package.json"), "{}")
+    const r = runInit({ cwd: outer })
+    expect(r.ok).toBe(false)
+    expect(r.steps[0].note).toContain("cd my-app")
+  })
+
   it("will not guess in a layout it cannot read safely", () => {
     const dir = project({ "tsconfig.json": "{}", "app/globals.css": `@import "tailwindcss";\n`, "app/layout.tsx": `export default function L(props) { return <html><body>{props.children}</body></html> }\n` })
     const r = runInit({ cwd: dir, layout: true })

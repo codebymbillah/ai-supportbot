@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 (1 Nov 2026)
+- `init --layout` now places the chat in the layout that create-next-app makes today (`<body ...>{children}</body>` on one line), keeping the file's semicolons. Before, it stopped with "to do".
+- Run one folder too high (create-next-app often makes `my-app/my-app`), `init` names the folder to `cd` into. 47 tests.
+
 ## 0.4.0 (1 Nov 2026)
 - Hosted mode: `init --key <site key>` saves `SUPPORT_CHAT_KEY` in `.env.local`, and the door sends it to the chat service as `X-Chat-Key` (server only). `SUPPORT_CHAT_URL` is read as a second name for the service address. `docs/HOSTED-SERVICE.md` lists what the client sets in a dashboard and what the service must do. The service itself is not built. 45 tests.
 
