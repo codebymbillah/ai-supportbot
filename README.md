@@ -63,6 +63,7 @@ src/
   labels/         every sentence the widget writes: labels.ts (English), labels-bn.ts (a ready Bangla set)
   styles/         support-chat.css: motion, border colour and the brand variables
   lib/            cn.ts
+panel/            the client dashboard (demo data for now): settings, products, inbox, team. See panel/README.md
 cli/              `npx support-chat init`: sets a project up with one command
 example/          a route, a wrapper, demo scripts and the CSS lines a new project copies
 docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (module and adapter), HOSTED-SERVICE.md (what a client sets),

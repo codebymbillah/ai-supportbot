@@ -1,0 +1,122 @@
+import type { PanelState, Product } from "./types"
+
+// Demo data. Fixed dates, so the server and the browser draw the same page.
+const product = (n: number, title: string, price: number | null, stock: Product["stock"], category: string, fetchedAt: string, hidden = false): Product => ({
+  id: `p${n}`,
+  externalId: `ext-${n}`,
+  title,
+  description: `${title}. Sold by the shop, ships in 2 to 4 days.`,
+  url: `https://shop.example.com/p/${n}`,
+  price,
+  currency: "BDT",
+  stock,
+  category,
+  fetchedAt,
+  hidden,
+})
+
+export function seed(): PanelState {
+  return {
+    user: null,
+    sites: [
+      {
+        id: "site_transfarx",
+        name: "TransfarX",
+        domains: ["transfarx.com", "www.transfarx.com"],
+        keyPrefix: "sk_live_4f9a1",
+        createdAt: "2026-10-12T09:00:00Z",
+        settings: {
+          enabled: true,
+          assistantName: "TransfarX Assistant",
+          tagline: "Sourcing help, any time",
+          greeting: "Hi! Tell me what you want to import and I will help you find it.",
+          chips: ["Find a product", "How does ordering work?", "Shipping time"],
+          language: "auto",
+          photos: { enabled: true, maxPerMessage: 3, maxMb: 5 },
+          forbiddenTerms: ["AliExpress", "Alibaba", "1688"],
+          contact: { phone: "+880 1700-000000", whatsapp: "+880 1700-000000", email: "help@transfarx.com", hours: "Sat to Thu, 10:00 to 19:00" },
+          staleHours: 48,
+          monthlyLimit: 50,
+        },
+        sources: [{ id: "src1", kind: "connector", address: "TransfarX products", lastRead: "2026-11-01T06:00:00Z", status: "ok", note: "Read 1 Nov, 06:00.", products: 4 }],
+        products: [
+          product(1, "Fun Play Dough Tools Kit For Kids", 760, "in_stock", "Toys", "2026-11-01T06:00:00Z"),
+          product(2, "LED Desk Lamp, USB, 3 modes", 1450, "in_stock", "Home", "2026-11-01T06:00:00Z"),
+          product(3, "Wireless Earbuds Case, silicone", 240, "out_of_stock", "Accessories", "2026-10-27T06:00:00Z"),
+          product(4, "Custom printed packaging box", null, "on_request", "Packaging", "2026-11-01T06:00:00Z", true),
+        ],
+        notes: [
+          { id: "n1", title: "Delivery and advance", body: "Air shipping is quoted per order. We confirm the delivery fee and the total, then the customer pays an advance.", kind: "text" },
+          { id: "n2", title: "Returns policy", body: "https://transfarx.com/returns", kind: "page" },
+        ],
+        chats: [
+          {
+            id: "c1",
+            visitor: "Visitor 4821",
+            status: "open",
+            unread: true,
+            flagged: false,
+            messages: [
+              { id: "m1", from: "customer", text: "Do you have LED desk lamps? I need 200 pieces.", at: "2026-11-01T08:12:00Z" },
+              { id: "m2", from: "assistant", text: "Yes: LED Desk Lamp, USB, 3 modes, 1,450 BDT each on the shop page. For 200 pieces the team confirms the final price.", at: "2026-11-01T08:12:20Z" },
+            ],
+          },
+          {
+            id: "c2",
+            visitor: "Rahim (signed in)",
+            status: "agent",
+            unread: false,
+            flagged: true,
+            messages: [
+              { id: "m3", from: "customer", text: "My order is late and nobody answers.", at: "2026-10-31T15:02:00Z" },
+              { id: "m4", from: "system", text: "A team member joined the chat.", at: "2026-10-31T15:04:00Z" },
+              { id: "m5", from: "agent", text: "Sorry for the wait, I am checking your order now.", at: "2026-10-31T15:05:00Z" },
+            ],
+          },
+          {
+            id: "c3",
+            visitor: "Visitor 1190",
+            status: "closed",
+            unread: false,
+            flagged: false,
+            messages: [
+              { id: "m6", from: "customer", text: "How long does shipping take?", at: "2026-10-30T11:00:00Z" },
+              { id: "m7", from: "assistant", text: "Air shipping is usually 7 to 12 days. The team confirms the exact time with your order.", at: "2026-10-30T11:00:15Z" },
+            ],
+          },
+        ],
+        team: [
+          { id: "t1", email: "owner@transfarx.com", role: "owner", invited: false },
+          { id: "t2", email: "support@transfarx.com", role: "agent", invited: false },
+        ],
+        usage: { chats: 312, handedOver: 41, firstReplySeconds: 4, spend: 18.4, month: "Nov 2026" },
+      },
+      {
+        id: "site_acme",
+        name: "Acme Books (pilot)",
+        domains: ["acmebooks.example"],
+        keyPrefix: "sk_test_b27c0",
+        createdAt: "2026-10-30T09:00:00Z",
+        settings: {
+          enabled: false,
+          assistantName: "Acme Helper",
+          tagline: "",
+          greeting: "Hello! Looking for a book?",
+          chips: ["Bestsellers", "Delivery"],
+          language: "en",
+          photos: { enabled: false, maxPerMessage: 3, maxMb: 5 },
+          forbiddenTerms: [],
+          contact: { phone: "", whatsapp: "", email: "shop@acmebooks.example", hours: "Daily, 9:00 to 18:00" },
+          staleHours: 48,
+          monthlyLimit: 20,
+        },
+        sources: [{ id: "src2", kind: "site", address: "https://acmebooks.example", lastRead: null, status: "never", note: "Not read yet.", products: 0 }],
+        products: [],
+        notes: [],
+        chats: [],
+        team: [{ id: "t3", email: "owner@acmebooks.example", role: "owner", invited: false }],
+        usage: { chats: 0, handedOver: 0, firstReplySeconds: 0, spend: 0, month: "Nov 2026" },
+      },
+    ],
+  }
+}
