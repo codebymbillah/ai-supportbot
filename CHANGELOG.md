@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1 (1 Nov 2026)
+- One command now does the whole install: `npx github:TechaByte-Solutions/support-chat-kit#v0.3.1 init ...` installs the package first (when it is not in `package.json`), then sets the project up. `--dry-run` says what it would install. README rewritten as a short step-by-step with a table of what the command does.
+
 ## 0.3.0 (29 Oct 2026)
 - `npx support-chat init` sets a Next.js project up with one command: the route (`app/` or `src/app/`, `.ts` or `.js`), `transpilePackages`, the Tailwind `@source` line, `API_URL`, and with `--layout` the chat in the layout. Options `--brand`, `--api-url`, `--dry-run`. It never replaces a file's content, says what it did, changes nothing on a second run, and tells you plainly when a file needs a manual change (a Tailwind 3 project, a config it cannot read, a route that already exists). 12 tests, 43 in all.
 

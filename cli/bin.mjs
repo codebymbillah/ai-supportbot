@@ -3,8 +3,9 @@ import { runInit } from "./init.mjs"
 
 const HELP = `support-chat: set up the support chat in a Next.js project
 
-Usage (run in the project's root folder):
-  npx support-chat init [options]
+Usage (run in the project's root folder). One command: it also installs the package.
+  npx github:TechaByte-Solutions/support-chat-kit#v0.3.0 init [options]
+  (if the package is already installed: npx support-chat init [options])
 
 Options:
   --brand "Acme Books"   the name written into the chat (default: from package.json)
@@ -28,7 +29,7 @@ const value = (flag) => {
 }
 
 const dryRun = args.includes("--dry-run")
-const { ok, steps } = runInit({ brand: value("--brand"), apiUrl: value("--api-url"), layout: args.includes("--layout"), dryRun })
+const { ok, steps } = runInit({ brand: value("--brand"), apiUrl: value("--api-url"), layout: args.includes("--layout"), dryRun, install: true })
 
 const mark = { created: "+ created ", changed: "~ changed ", kept: "= kept    ", manual: "! to do   ", error: "x error   " }
 console.log(`\nsupport-chat init${dryRun ? " (dry run: nothing was written)" : ""}\n`)

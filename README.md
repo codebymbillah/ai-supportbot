@@ -2,28 +2,38 @@
 
 An AI sales and support chat for Next.js: a floating button and a chat window, a safe server door to the backend, a scripted demo for review, and a written backend contract. Built for TransfarX first. A new project brings its own name, colours, words and backend tools; nothing inside the package names a brand.
 
-## How it is used
-The chat has two halves that work together: this package (the chat box on the website) and a backend that writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`).
-
-**On another Next.js website** (works today), one command:
+## Install: one command
+Run this in the root folder of your Next.js project (Next.js 15 or 16, App Router, Tailwind 4):
 ```
-npm install github:TechaByte-Solutions/support-chat-kit#v0.3.0
-npx support-chat init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
+npx github:TechaByte-Solutions/support-chat-kit#v0.3.1 init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
 ```
-Then restart the dev server. `init` adds only what is missing and never replaces a file's content; it prints what it did, and a second run changes nothing. It:
-- creates `app/api/chat/[...path]/route.ts` (or `src/app/...`): the safe door to the backend, two lines;
-- adds `transpilePackages: ["@techabyte/support-chat"]` to `next.config`;
-- adds one line to the global CSS so Tailwind finds the chat's classes: `@source "../node_modules/@techabyte/support-chat/src";` (needs Tailwind 4);
-- puts `API_URL=…` in `.env.local`;
-- with `--layout`, adds `<SupportChat config={{ brandName: "Acme Books" }} />` to `app/layout` (without it, `init` tells you what to add). Use `--dry-run` first to see the changes without making them.
+Change the name and the backend address to yours, then restart the dev server (`npm run dev`). That is all.
 
-Check it: open `/api/chat/status` in the browser (some JSON means the route works). The chat reads the backend's own chat settings (assistant name, greeting, suggestion chips, photos, and the on/off switch) and shows nothing while the backend says it is off. Colours, every sentence (a ready Bangla set is included), the money format, a cart button and the Bangla font are options in the same `config`; see `example/custom-setup.tsx` and `INSTALL.md`. The backend must follow `docs/CONTRACT.md`. To see the chat before the backend is ready, use the scripted demo (`createDemoTransport`).
+It installs the package and sets the project up. It adds only what is missing, never replaces a file's content, prints what it did, and a second run changes nothing.
 
-Prefer to do it by hand? `INSTALL.md` lists every step.
+| It does | Where |
+|---|---|
+| installs the package | `package.json` |
+| adds the safe door to your backend (two lines) | `app/api/chat/[...path]/route.ts` (or `src/app/...`) |
+| lets Next compile the package | `transpilePackages` in `next.config` |
+| lets Tailwind find the chat's classes | one `@source` line in your global CSS |
+| stores your backend address | `API_URL` in `.env.local` |
+| shows the chat on every page (with `--layout`) | `app/layout` |
 
-**On WordPress or Shopify** (planned, not built): a plugin or app that adds the same chat through a script, with the chat service hosted by us. The plan is in `docs/BACKEND-MODULE.md`.
+**Not sure yet?** Add `--dry-run` to the command: it only lists what it would change. Commit your work first, so you can see the changes afterwards.
 
-Full steps and the checklist before going live: `INSTALL.md`.
+**Check it works:** open `/api/chat/status` in the browser. Some JSON means the door works. The chat button shows when your backend's chat settings say the chat is on.
+
+**If a step says "to do"**, `init` could not do it safely (for example a Tailwind 3 project, an unusual `next.config`, or a route that already exists). It tells you the exact line to add. `INSTALL.md` has every step for doing it by hand.
+
+### What your backend must give
+The chat is the website half. A backend writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`). It must follow `docs/CONTRACT.md`. To look at the chat before the backend is ready, use the scripted demo (`createDemoTransport`).
+
+### Your name, colours and words
+`brandName` is the only required setting. The assistant's name, greeting, suggestion chips, photo rules and the on/off switch come from the backend's chat settings. Colours, every sentence (a ready Bangla set is included), the money format, a cart button and the Bangla font are options in the same `config`; see `example/custom-setup.tsx` and `INSTALL.md`.
+
+### WordPress or Shopify
+Planned, not built: a plugin or app that adds the same chat through a script, with the chat service hosted by us. See `docs/BACKEND-MODULE.md`.
 
 ## What the visitor gets
 The visitor writes in any language and the assistant answers a few seconds later, with cards when useful (products, an order estimate, a sourcing request to confirm). They can attach up to three photos, rate an answer, start a new chat, ask for a person, and leave a number for a call-back. A team member can take the chat over in the same window. It is full screen on a phone.

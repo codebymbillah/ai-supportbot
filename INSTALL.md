@@ -3,17 +3,17 @@
 For a Next.js 15 or 16 project with Tailwind v4. About an hour with a ready backend. This path was tried on a fresh Next.js 16 app: the package built and the chat opened, sent a message with a photo and started a new chat.
 
 ## The quick way: one command
+In the project's root folder:
 ```
-npm install github:TechaByte-Solutions/support-chat-kit#v0.3.0
-npx support-chat init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
+npx github:TechaByte-Solutions/support-chat-kit#v0.3.1 init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
 ```
-This does steps 1 to 5 below that are about files (the route, `transpilePackages`, the CSS line, `API_URL`, the layout) and prints what it changed; a second run changes nothing, and `--dry-run` only shows. Read on if you want to do it by hand or change something.
+It installs the package, then does steps 1, 2, 4 and the layout part of 3 below, prints what it changed, and a second run changes nothing. Add `--dry-run` to only see what it would do. Restart the dev server, then open `/api/chat/status`: some JSON means it works. Read on to do it by hand or to change something.
 
 ## 1. Add the package
 ```
-npm install github:<owner>/support-chat-kit#v0.3.0
+npm install github:<owner>/support-chat-kit#v0.3.1
 ```
-(or `npm install ./techabyte-support-chat-0.3.0.tgz` from `npm pack`). It ships TypeScript source, so let Next compile it, in `next.config.ts`:
+(or `npm install ./techabyte-support-chat-0.3.1.tgz` from `npm pack`). It ships TypeScript source, so let Next compile it, in `next.config.ts`:
 ```ts
 const config: NextConfig = { transpilePackages: ["@techabyte/support-chat"] }
 ```

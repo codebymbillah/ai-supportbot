@@ -1,9 +1,12 @@
 // `npx support-chat init`: sets up the chat in a Next.js project with one command. It adds only what is missing, never overwrites a
 // file's content, and says what it did. The logic lives here (no prompts, no process.exit) so it can be tested.
+import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 export const PACKAGE = "@techabyte/support-chat"
+const REPO = "github:TechaByte-Solutions/support-chat-kit"
 
 const ROUTE = `import { createChatProxy } from "${PACKAGE}/server"
 
@@ -17,10 +20,10 @@ const read = (p) => fs.readFileSync(p, "utf8")
 const posix = (p) => p.split(path.sep).join("/")
 
 /**
- * @param {{ cwd?: string, brand?: string, apiUrl?: string, layout?: boolean, dryRun?: boolean }} [options]
+ * @param {{ cwd?: string, brand?: string, apiUrl?: string, layout?: boolean, dryRun?: boolean, install?: boolean }} [options]
  * @returns {{ ok: boolean, steps: Step[], appDir?: string }}
  */
-export function runInit({ cwd = process.cwd(), brand, apiUrl, layout = false, dryRun = false } = {}) {
+export function runInit({ cwd = process.cwd(), brand, apiUrl, layout = false, dryRun = false, install = false } = {}) {
   /** @type {Step[]} */
   const steps = []
   const rel = (p) => posix(path.relative(cwd, p)) || "."
@@ -48,6 +51,26 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, layout = false, dr
     return { ok: false, steps }
   }
   const isTs = exists(path.join(cwd, "tsconfig.json"))
+
+  // ---- 0. the package itself (only when asked: the command line does, the tests do not)
+  if (install) {
+    if (pkg.dependencies?.[PACKAGE] || pkg.devDependencies?.[PACKAGE]) {
+      add("kept", "package.json", "The chat package is already installed.")
+    } else {
+      const version = JSON.parse(read(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json"))).version
+      const spec = `${REPO}#v${version}`
+      if (dryRun) {
+        add("created", "package.json", `Would run: npm install ${spec}`)
+      } else {
+        const r = spawnSync("npm", ["install", spec], { cwd, stdio: "inherit", shell: process.platform === "win32" })
+        if (r.status !== 0) {
+          add("error", "package.json", `npm install ${spec} failed. Run it yourself, then run this command again.`)
+          return { ok: false, steps }
+        }
+        add("created", "package.json", `Installed ${PACKAGE} ${version}.`)
+      }
+    }
+  }
 
   // ---- 1. the route: the safe door to the backend
   const route = path.join(appDir, "api", "chat", "[...path]", isTs ? "route.ts" : "route.js")
