@@ -38,6 +38,13 @@ describe("the chat door", () => {
     expect(h["X-Forwarded-For"]).toBe("203.0.113.9")
   })
 
+  it("sends the site key to the chat service, and only from the server", async () => {
+    await createChatProxy({ apiUrl: "https://chat.example.com/v1", siteKey: "sk_live_abc" }).GET(new Request("https://shop.example.com/api/chat/config"), ctx("config"))
+    expect((calls[0].init!.headers as Record<string, string>)["X-Chat-Key"]).toBe("sk_live_abc")
+    await door().GET(new Request("https://shop.example.com/api/chat/config"), ctx("config"))
+    expect((calls[1].init!.headers as Record<string, string>)["X-Chat-Key"]).toBeUndefined()
+  })
+
   it("rebuilds a message field by field and drops anything else", async () => {
     await door().POST(json({ message: "  hello  ", guest_token: "x", role: "admin", supplier: "Acme Co", context: { path: "/p", product_slug: "s", cart: [{ product_id: "1", qty: 2, cost: 5 }, { product_id: "2", qty: -1 }], evil: 1 } }), ctx("messages"))
     const sent = JSON.parse(String(calls[0].init!.body))

@@ -20,10 +20,10 @@ const read = (p) => fs.readFileSync(p, "utf8")
 const posix = (p) => p.split(path.sep).join("/")
 
 /**
- * @param {{ cwd?: string, brand?: string, apiUrl?: string, layout?: boolean, dryRun?: boolean, install?: boolean }} [options]
+ * @param {{ cwd?: string, brand?: string, apiUrl?: string, siteKey?: string, layout?: boolean, dryRun?: boolean, install?: boolean }} [options]
  * @returns {{ ok: boolean, steps: Step[], appDir?: string }}
  */
-export function runInit({ cwd = process.cwd(), brand, apiUrl, layout = false, dryRun = false, install = false } = {}) {
+export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = false, dryRun = false, install = false } = {}) {
   /** @type {Step[]} */
   const steps = []
   const rel = (p) => posix(path.relative(cwd, p)) || "."
@@ -132,14 +132,25 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, layout = false, dr
     }
   }
 
-  // ---- 4. the backend address
+  // ---- 4. the backend address, and the site key when the chat is hosted
   const envFile = [".env.local", ".env"].map((n) => path.join(cwd, n)).find((f) => exists(f)) ?? path.join(cwd, ".env.local")
-  const env = exists(envFile) ? read(envFile) : ""
-  if (/^\s*API_URL\s*=/m.test(env)) {
-    add("kept", envFile, "API_URL is already set.")
+  let env = exists(envFile) ? read(envFile) : ""
+  const has = (name) => new RegExp(`^\s*${name}\s*=`, "m").test(env)
+  const line = (comment, name, value) => `${env && !env.endsWith("\n") ? "\n" : ""}${comment ? `# ${comment}\n` : ""}${name}=${value}\n`
+  const wrote = []
+  if (siteKey && !has("SUPPORT_CHAT_KEY")) {
+    env += line("Site key from the chat service (server only: never put it in the browser)", "SUPPORT_CHAT_KEY", siteKey)
+    wrote.push("SUPPORT_CHAT_KEY")
+  }
+  if (!has("API_URL") && !has("SUPPORT_CHAT_URL")) {
+    env += line(siteKey ? "Address of the chat service" : "Backend address for the support chat", "API_URL", apiUrl ?? "https://your-backend.example.com/api/v1")
+    wrote.push("API_URL")
+  }
+  if (wrote.length) {
+    write(envFile, env)
+    add(siteKey || apiUrl ? "changed" : "manual", envFile, apiUrl || siteKey ? `Set ${wrote.join(" and ")}.` : "Added API_URL with a placeholder: put your backend's address there.")
   } else {
-    write(envFile, `${env}${env && !env.endsWith("\n") ? "\n" : ""}# Backend address for the support chat\nAPI_URL=${apiUrl ?? "https://your-backend.example.com/api/v1"}\n`)
-    add(apiUrl ? "changed" : "manual", envFile, apiUrl ? "Set API_URL." : "Added API_URL with a placeholder: put your backend's address there.")
+    add("kept", envFile, "The chat settings are already there.")
   }
 
   // ---- 5. the chat in the layout (only with --layout; otherwise it says what to add)

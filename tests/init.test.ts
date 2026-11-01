@@ -127,6 +127,15 @@ describe("support-chat init", () => {
     expect(has(add, ".env.local")).toBe(false)
   })
 
+  it("stores a site key for the hosted chat and keeps it on a second run", () => {
+    const dir = project({ "app/x.txt": "" })
+    runInit({ cwd: dir, siteKey: "sk_live_abc", apiUrl: "https://chat.example.com/v1" })
+    expect(read(dir, ".env.local")).toBe("# Site key from the chat service (server only: never put it in the browser)\nSUPPORT_CHAT_KEY=sk_live_abc\n# Address of the chat service\nAPI_URL=https://chat.example.com/v1\n")
+    const again = runInit({ cwd: dir, siteKey: "sk_other", apiUrl: "https://other/v1" })
+    expect(read(dir, ".env.local")).toContain("sk_live_abc")
+    expect(again.steps.find((x) => x.file.endsWith(".env.local"))?.status).toBe("kept")
+  })
+
   it("writes nothing on a dry run", () => {
     const dir = project({ "tsconfig.json": "{}", "next.config.ts": `const nextConfig = {}\nexport default nextConfig\n`, "app/globals.css": `@import "tailwindcss";\n`, "app/layout.tsx": LAYOUT })
     const before = ["next.config.ts", "app/globals.css", "app/layout.tsx"].map((f) => read(dir, f))

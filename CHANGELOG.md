@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0 (1 Nov 2026)
+- Hosted mode: `init --key <site key>` saves `SUPPORT_CHAT_KEY` in `.env.local`, and the door sends it to the chat service as `X-Chat-Key` (server only). `SUPPORT_CHAT_URL` is read as a second name for the service address. `docs/HOSTED-SERVICE.md` lists what the client sets in a dashboard and what the service must do. The service itself is not built. 45 tests.
+
 ## 0.3.1 (1 Nov 2026)
 - One command now does the whole install: `npx github:TechaByte-Solutions/support-chat-kit#v0.3.1 init ...` installs the package first (when it is not in `package.json`), then sets the project up. `--dry-run` says what it would install. README rewritten as a short step-by-step with a table of what the command does.
 

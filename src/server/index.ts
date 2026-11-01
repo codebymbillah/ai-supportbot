@@ -34,6 +34,8 @@ export interface ChatProxyOptions {
   apiUrl?: string
   /** The signed-in customer's token (read from the project's cookie), or undefined for a visitor. Default: every caller is a visitor. */
   authToken?: () => Promise<string | undefined>
+  /** The site key the chat service gave this site (hosted mode). Sent as `X-Chat-Key`; it lives on the server only. Default: the `SUPPORT_CHAT_KEY` environment variable. */
+  siteKey?: string
   /** The project's own request safety. Leave it out to use `defaultGuard` (guard.ts). */
   guard?: ChatGuard
   /** Photos in a message: how many files and how large each may be. `false` refuses photos. Default: 3 files of 5 MB. */
@@ -78,7 +80,7 @@ function pass(res: Response, data: unknown) {
   return NextResponse.json({ message, errors, contact }, { status: res.status, headers })
 }
 
-export function createChatProxy({ apiUrl: given, authToken = async () => undefined, guard = defaultGuard, limits, images = { maxFiles: 3, maxBytes: 5 * 1024 * 1024 } }: ChatProxyOptions = {}) {
+export function createChatProxy({ apiUrl: given, siteKey: givenKey, authToken = async () => undefined, guard = defaultGuard, limits, images = { maxFiles: 3, maxBytes: 5 * 1024 * 1024 } }: ChatProxyOptions = {}) {
   const allowed: Record<string, [number, number][]> = { ...DEFAULT_LIMITS, ...limits }
 
   async function forward(req: Request, { params }: { params: Promise<{ path: string[] }> }) {
@@ -86,7 +88,8 @@ export function createChatProxy({ apiUrl: given, authToken = async () => undefin
     const target = place((await params).path, method)
     if (!target) return NextResponse.json({ message: "Not found." }, { status: 404 })
     // Read when a call arrives, so a missing setting says what is wrong instead of failing the build.
-    const apiUrl = (given ?? process.env.API_URL ?? "").replace(/\/+$/, "")
+    const siteKey = givenKey ?? process.env.SUPPORT_CHAT_KEY
+    const apiUrl = (given ?? process.env.API_URL ?? process.env.SUPPORT_CHAT_URL ?? "").replace(/\/+$/, "")
     if (!apiUrl) return NextResponse.json({ message: "The chat is not set up: the API_URL setting is missing." }, { status: 500 })
 
     if (method === "POST") {
@@ -101,7 +104,7 @@ export function createChatProxy({ apiUrl: given, authToken = async () => undefin
     }
 
     const auth = await authToken()
-    const headers = { Accept: "application/json", ...guard.forwardedFor(req.headers), ...(auth ? { Authorization: `Bearer ${auth}` } : {}) }
+    const headers = { Accept: "application/json", ...guard.forwardedFor(req.headers), ...(auth ? { Authorization: `Bearer ${auth}` } : {}), ...(siteKey ? { "X-Chat-Key": siteKey } : {}) }
     let res: Response
     try {
       if (method === "GET") {

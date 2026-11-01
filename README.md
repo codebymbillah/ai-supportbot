@@ -5,7 +5,7 @@ An AI sales and support chat for Next.js: a floating button and a chat window, a
 ## Install: one command
 Run this in the root folder of your Next.js project (Next.js 15 or 16, App Router, Tailwind 4):
 ```
-npx github:TechaByte-Solutions/support-chat-kit#v0.3.1 init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
+npx github:TechaByte-Solutions/support-chat-kit#v0.4.0 init --brand "Acme Books" --api-url https://your-backend.com/api/v1 --layout
 ```
 Change the name and the backend address to yours, then restart the dev server (`npm run dev`). That is all.
 
@@ -26,7 +26,15 @@ It installs the package and sets the project up. It adds only what is missing, n
 
 **If a step says "to do"**, `init` could not do it safely (for example a Tailwind 3 project, an unusual `next.config`, or a route that already exists). It tells you the exact line to add. `INSTALL.md` has every step for doing it by hand.
 
-### What your backend must give
+### Using our hosted chat (no backend work for you)
+If we host the chat for you, you change nothing on your side except two things in your project: a site key and the command below. Everything else (on/off, name, greeting, photo rules, allowed domains) is set in the dashboard.
+```
+npx github:TechaByte-Solutions/support-chat-kit#v0.4.0 init --key sk_live_xxx --brand "Your Shop" --layout
+```
+The key is saved on the server only (`SUPPORT_CHAT_KEY`). What the service and dashboard must provide is in `docs/HOSTED-SERVICE.md`: the service is planned, not built yet.
+
+### If you run your own backend
+
 The chat is the website half. A backend writes the answers (today the TransfarX Laravel chat; making it reusable is planned in `docs/BACKEND-MODULE.md`). It must follow `docs/CONTRACT.md`. To look at the chat before the backend is ready, use the scripted demo (`createDemoTransport`).
 
 ### Your name, colours and words

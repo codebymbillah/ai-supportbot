@@ -9,6 +9,7 @@ Usage (run in the project's root folder). One command: it also installs the pack
 
 Options:
   --brand "Acme Books"   the name written into the chat (default: from package.json)
+  --key <site key>       the key the chat service gave your site (stored on the server only)
   --api-url <address>    the backend address for API_URL, e.g. https://admin.example.com/api/v1
   --layout               also add the chat to app/layout (otherwise it tells you what to add)
   --dry-run              show what would change, change nothing
@@ -29,7 +30,7 @@ const value = (flag) => {
 }
 
 const dryRun = args.includes("--dry-run")
-const { ok, steps } = runInit({ brand: value("--brand"), apiUrl: value("--api-url"), layout: args.includes("--layout"), dryRun, install: true })
+const { ok, steps } = runInit({ brand: value("--brand"), apiUrl: value("--api-url"), siteKey: value("--key"), layout: args.includes("--layout"), dryRun, install: true })
 
 const mark = { created: "+ created ", changed: "~ changed ", kept: "= kept    ", manual: "! to do   ", error: "x error   " }
 console.log(`\nsupport-chat init${dryRun ? " (dry run: nothing was written)" : ""}\n`)
