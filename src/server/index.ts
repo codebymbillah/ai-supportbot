@@ -72,6 +72,13 @@ function place(parts: string[], method: "GET" | "POST") {
 
 // What may go back to the browser: the answer as it is, but for an error only the sentence and the support numbers (never server internals).
 function pass(res: Response, data: unknown) {
+  // A redirect means API_URL is not the final address (usually http:// that the server moves to https://). Following it would turn a
+  // POST into a GET, so a message would look sent but never be saved. Say so instead.
+  if (res.status >= 300 && res.status < 400) {
+    const to = res.headers.get("location")
+    console.error(`[support-chat] The backend redirects ${res.url || "API_URL"}${to ? ` to ${to}` : ""}. Set API_URL to the final address (https).`)
+    return NextResponse.json({ message: "The chat is not set up correctly: the backend address redirects. Use its https address in API_URL." }, { status: 500, headers: { "Cache-Control": "no-store" } })
+  }
   const retryAfter = res.headers.get("Retry-After")
   const headers = { "Cache-Control": "no-store", ...(retryAfter ? { "Retry-After": retryAfter } : {}) }
   if (res.ok) return NextResponse.json(data ?? {}, { status: res.status, headers })
@@ -116,7 +123,7 @@ export function createChatProxy({ apiUrl: given, siteKey: givenKey, authToken = 
           const gt = token(q.get("guest_token"))
           if (gt) query.set("guest_token", gt)
         }
-        res = await fetch(`${apiUrl}/chat/${target.path}${query.size ? `?${query}` : ""}`, { headers, cache: "no-store", signal: req.signal })
+        res = await fetch(`${apiUrl}/chat/${target.path}${query.size ? `?${query}` : ""}`, { headers, cache: "no-store", redirect: "manual", signal: req.signal })
       } else {
         const multipart = target.kind === "messages" && (req.headers.get("content-type") ?? "").startsWith("multipart/form-data")
         if (multipart) {
@@ -126,14 +133,14 @@ export function createChatProxy({ apiUrl: given, siteKey: givenKey, authToken = 
           const built = form ? await rebuildForm(form, images) : { status: 422, message: "Please write a message first." }
           if ("message" in built) return NextResponse.json({ message: built.message }, { status: built.status })
           // No Content-Type: fetch adds it with the boundary.
-          res = await fetch(`${apiUrl}/chat/${target.path}`, { method: "POST", headers, body: built.body, cache: "no-store", signal: req.signal })
+          res = await fetch(`${apiUrl}/chat/${target.path}`, { method: "POST", headers, body: built.body, cache: "no-store", redirect: "manual", signal: req.signal })
           return pass(res, await res.json().catch(() => undefined))
         }
         if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY) return NextResponse.json({ message: "That message is too long." }, { status: 413 })
         const raw = (await req.json().catch(() => undefined)) as Record<string, unknown> | undefined
         const body = raw && typeof raw === "object" ? rebuild(target.kind, raw) : undefined
         if (!body) return NextResponse.json({ message: "Please write a message first." }, { status: 422 })
-        res = await fetch(`${apiUrl}/chat/${target.path}`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store", signal: req.signal })
+        res = await fetch(`${apiUrl}/chat/${target.path}`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store", redirect: "manual", signal: req.signal })
       }
     } catch {
       return NextResponse.json({ message: "Can't reach the server right now. Check your connection and try again." }, { status: 502 })

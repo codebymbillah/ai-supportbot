@@ -116,6 +116,15 @@ describe("support-chat init", () => {
     expect(again.steps.every((s) => s.status === "kept")).toBe(true)
   })
 
+  it("warns when the backend address is plain http on a real server, but not on localhost", () => {
+    const real = project({ "app/x.txt": "" })
+    const r = runInit({ cwd: real, apiUrl: "http://admin.example.com/api/v1" })
+    expect(r.steps.find((s) => s.file === ".env.local")?.status).toBe("manual")
+    expect(r.steps.find((s) => s.file === ".env.local")?.note).toContain("https://")
+    const local = project({ "app/x.txt": "" })
+    expect(runInit({ cwd: local, apiUrl: "http://localhost:8000/api/v1" }).steps.find((s) => s.file === ".env.local")?.status).toBe("changed")
+  })
+
   it("keeps an existing API_URL and adds to an existing .env without losing it", () => {
     const keep = project({ "app/x.txt": "", ".env.local": "API_URL=https://mine/v1\nOTHER=1\n" })
     runInit({ cwd: keep, apiUrl: "https://other/v1" })

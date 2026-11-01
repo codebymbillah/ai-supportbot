@@ -150,7 +150,10 @@ export function runInit({ cwd = process.cwd(), brand, apiUrl, siteKey, layout = 
   }
   if (wrote.length) {
     write(envFile, env)
-    add(siteKey || apiUrl ? "changed" : "manual", envFile, apiUrl || siteKey ? `Set ${wrote.join(" and ")}.` : "Added API_URL with a placeholder: put your backend's address there.")
+    // http:// to a real server is almost always redirected to https://, and a redirected POST loses the message.
+    const plainHttp = apiUrl && /^http:\/\//i.test(apiUrl) && !/^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i.test(apiUrl)
+    if (plainHttp) add("manual", envFile, `Set ${wrote.join(" and ")}, but the address starts with http://. Use https:// unless the backend really has no https: a redirect would stop messages from saving.`)
+    else add(siteKey || apiUrl ? "changed" : "manual", envFile, apiUrl || siteKey ? `Set ${wrote.join(" and ")}.` : "Added API_URL with a placeholder: put your backend's address there.")
   } else {
     add("kept", envFile, "The chat settings are already there.")
   }

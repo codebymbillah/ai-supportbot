@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3 (1 Nov 2026)
+- The door no longer follows a backend redirect. An `API_URL` that starts with `http://` on a server that moves to `https://` turned each message into a read, so the chat opened but nothing was saved. Now the route answers with a clear "use the https address" message and logs the address it was sent to.
+- `init --api-url http://...` (not localhost) marks the step "to do" and says to use `https://`. 50 tests.
+
 ## 0.4.2 (1 Nov 2026)
 - A message that did not send now says why under the conversation (for example "Can't reach ... right now"), and the typing dots no longer keep running after it failed.
 

@@ -24,6 +24,14 @@ const json = (body: unknown, extra: Record<string, string> = {}) =>
   new Request("https://shop.example.com/api/chat/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": freshIp(), host: "shop.example.com", ...extra }, body: JSON.stringify(body) })
 
 describe("the chat door", () => {
+  it("does not follow a backend redirect, so a message is never quietly turned into a read", async () => {
+    reply = () => new Response(null, { status: 301, headers: { Location: "https://api.example.com/v1/chat/messages" } })
+    const res = await door().POST(json({ message: "hi" }), ctx("messages"))
+    expect((calls[0].init as RequestInit).redirect).toBe("manual")
+    expect(res.status).toBe(500)
+    expect((await res.json()).message).toContain("https")
+  })
+
   it("answers 404 for a call it does not know", async () => {
     const res = await door().GET(new Request("https://shop.example.com/api/chat/admin"), ctx("admin"))
     expect(res.status).toBe(404)
