@@ -66,7 +66,7 @@ src/
 panel/            the client dashboard (demo data for now): settings, products, inbox, team. See panel/README.md
 cli/              `npx support-chat init`: sets a project up with one command
 example/          a route, a wrapper, demo scripts and the CSS lines a new project copies
-docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (module and adapter), HOSTED-SERVICE.md (what a client sets), BACKEND-CONTEXT.md (making the Laravel chat a package),
+docs/             CONTRACT.md (what the backend must answer), BACKEND-MODULE.md (module and adapter), HOSTED-SERVICE.md (what a client sets), backend-context-2026-11-01.md (making the Laravel chat a package),
                   SERVICE-BUILD-GUIDE.md (the service, the panel and each client's product data)
 tests/            43 tests: safety rules, labels, the server door, the reading of backend answers, the setup command
 ```
